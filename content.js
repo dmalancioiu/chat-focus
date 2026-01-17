@@ -1,29 +1,42 @@
 /**
- * ChatFocus - Production-Ready Auto-Collapse Extension
- * Automatically collapses past messages in AI chat interfaces for better focus
+ * ChatFocus - Modern UI Redesign
+ * Clean, accessible UI augmentation for ChatGPT
  */
 
 // ==================== CONFIGURATION ====================
 const CONFIG = {
-    DEFAULT_KEEP_OPEN: 1, // Number of recent messages to keep open
+    DEFAULT_KEEP_OPEN: 1,
     DEFAULT_ENABLED: true,
     DEFAULT_PREVIEW_LENGTH: 85,
-    DEBOUNCE_DELAY: 500, // Reduced from 1000ms for better responsiveness
-    INIT_DELAY: 1000, // Delay before initializing observer
+    DEBOUNCE_DELAY: 500,
+    INIT_DELAY: 1000,
     SELECTORS: {
-        // Multiple selector strategies for better compatibility
         articles: ['article', '[data-message-id]', '[role="article"]'],
         authorRole: ['[data-message-author-role]', '[data-author-role]', '[role]'],
         textContent: ['.markdown', '.whitespace-pre-wrap', '[data-message-content]', 'p']
     }
 };
 
+// SVG Icons
+const ICONS = {
+    expand: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/></svg>`,
+    collapse: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>`,
+    list: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
+    code: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+    search: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>`,
+    close: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`,
+    settings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`
+};
+
 // ==================== STATE MANAGEMENT ====================
 let observer = null;
 let settings = { ...CONFIG };
-let messageStates = new Map(); // Track expanded/collapsed state per message
+let messageStates = new Map();
 let isEnabled = true;
 let saveStateTimeout;
+let tocVisible = false;
+let tocSearchQuery = '';
+let controlsPosition = null;
 
 // ==================== UTILITY FUNCTIONS ====================
 function safeQuerySelector(selectors, parent = document) {
@@ -39,18 +52,15 @@ function safeQuerySelector(selectors, parent = document) {
 }
 
 function safeQuerySelectorAll(selectors, parent = document) {
-    const results = [];
     for (const selector of selectors) {
         try {
             const elements = Array.from(parent.querySelectorAll(selector));
-            if (elements.length > 0) {
-                return elements;
-            }
+            if (elements.length > 0) return elements;
         } catch (e) {
             console.warn(`ChatFocus: Invalid selector "${selector}"`, e);
         }
     }
-    return results;
+    return [];
 }
 
 function escapeHtml(text) {
@@ -60,13 +70,11 @@ function escapeHtml(text) {
 }
 
 function getMessageId(msgRow) {
-    // Try multiple strategies to get a unique ID
     const idAttr = msgRow.getAttribute('data-message-id') ||
         msgRow.getAttribute('id') ||
         msgRow.getAttribute('data-id');
     if (idAttr) return idAttr;
 
-    // Fallback: generate ID from content hash
     const content = msgRow.textContent?.substring(0, 50) || '';
     return `msg_${content.length}_${Date.now()}`;
 }
@@ -74,16 +82,20 @@ function getMessageId(msgRow) {
 // ==================== SETTINGS MANAGEMENT ====================
 async function loadSettings() {
     try {
-        // 1. Load User Preferences from SYNC (Cloud)
         const syncData = await chrome.storage.sync.get(['enabled', 'keepOpen', 'previewLength']);
         settings.enabled = syncData.enabled !== undefined ? syncData.enabled : CONFIG.DEFAULT_ENABLED;
         settings.keepOpen = syncData.keepOpen || CONFIG.DEFAULT_KEEP_OPEN;
         settings.previewLength = syncData.previewLength || CONFIG.DEFAULT_PREVIEW_LENGTH;
 
-        // 2. Load Message States from LOCAL (Disk) - This fixes the quota error
-        const localData = await chrome.storage.local.get(['messageStates']);
+        const localData = await chrome.storage.local.get(['messageStates', 'tocVisible', 'controlsPosition']);
         if (localData.messageStates) {
             messageStates = new Map(Object.entries(localData.messageStates));
+        }
+        if (localData.tocVisible !== undefined) {
+            tocVisible = localData.tocVisible;
+        }
+        if (localData.controlsPosition) {
+            controlsPosition = localData.controlsPosition;
         }
 
         isEnabled = settings.enabled;
@@ -97,8 +109,7 @@ async function saveSettings() {
         await chrome.storage.sync.set({
             enabled: settings.enabled,
             keepOpen: settings.keepOpen,
-            previewLength: settings.previewLength,
-            messageStates: Object.fromEntries(messageStates)
+            previewLength: settings.previewLength
         });
     } catch (error) {
         console.error('ChatFocus: Error saving settings', error);
@@ -106,16 +117,10 @@ async function saveSettings() {
 }
 
 function saveMessageState(msgId, isExpanded) {
-    // 1. Update memory immediately so the UI feels fast
     messageStates.set(msgId, isExpanded);
-
-    // 2. Clear any pending save (Debounce)
     clearTimeout(saveStateTimeout);
-
-    // 3. Wait 1 second before actually writing to disk
     saveStateTimeout = setTimeout(async () => {
         try {
-            // Use .local instead of .sync to avoid "MAX_WRITE_OPERATIONS" error
             await chrome.storage.local.set({
                 messageStates: Object.fromEntries(messageStates)
             });
@@ -125,10 +130,25 @@ function saveMessageState(msgId, isExpanded) {
     }, 1000);
 }
 
-// ==================== CORE FUNCTIONALITY ====================
+async function saveTocState() {
+    try {
+        await chrome.storage.local.set({ tocVisible });
+    } catch (error) {
+        console.error('ChatFocus: Error saving TOC state', error);
+    }
+}
+
+async function saveControlsPosition(position) {
+    try {
+        await chrome.storage.local.set({ controlsPosition: position });
+    } catch (error) {
+        console.error('ChatFocus: Error saving controls position', error);
+    }
+}
+
+// ==================== MESSAGE PROCESSING ====================
 function extractPreviewText(msgRow) {
     let previewText = "Collapsed Message";
-
     for (const selector of CONFIG.SELECTORS.textContent) {
         const textDiv = safeQuerySelector([selector], msgRow);
         if (textDiv) {
@@ -146,168 +166,149 @@ function extractPreviewText(msgRow) {
             }
         }
     }
-
     return previewText;
 }
 
 function extractFullText(msgRow) {
-    let fullText = "";
     for (const selector of CONFIG.SELECTORS.textContent) {
         const textDiv = safeQuerySelector([selector], msgRow);
         if (textDiv) {
             const text = textDiv.innerText || textDiv.textContent || '';
-            if (text.trim()) {
-                fullText = text.trim();
-                break;
-            }
+            if (text.trim()) return text.trim();
         }
     }
-    return fullText;
-}
-
-// AI Summarization using the chat's own API
-async function generateSummary(text, msgType) {
-    if (!text || text.length < 50) return null; // Don't summarize short messages
-
-    try {
-        // Try to use the page's existing API if available
-        // This is a lightweight approach - we'll create a simple summary
-        const words = text.split(/\s+/);
-        if (words.length <= 20) return null; // Already short enough
-
-        // Simple extractive summarization (first sentence or key phrases)
-        const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
-        if (sentences.length > 0) {
-            const firstSentence = sentences[0].trim();
-            if (firstSentence.length <= settings.previewLength) {
-                return firstSentence;
-            }
-        }
-
-        // Fallback: extract key phrases
-        const keyPhrases = text
-            .replace(/[^\w\s]/g, ' ')
-            .split(/\s+/)
-            .filter(w => w.length > 4)
-            .slice(0, 10)
-            .join(' ');
-
-        return keyPhrases.length > 0 ? keyPhrases.substring(0, settings.previewLength) : null;
-    } catch (error) {
-        console.warn('ChatFocus: Error generating summary', error);
-        return null;
-    }
+    return "";
 }
 
 function determineMessageType(msgRow) {
+    // Try to detect from DOM attributes
     for (const selector of CONFIG.SELECTORS.authorRole) {
         const authorNode = safeQuerySelector([selector], msgRow);
         if (authorNode) {
             const role = authorNode.getAttribute('data-message-author-role') ||
                 authorNode.getAttribute('data-author-role') ||
-                authorNode.getAttribute('role') ||
-                '';
+                authorNode.getAttribute('role') || '';
 
-            if (role.toLowerCase().includes('user') ||
-                authorNode.textContent?.toLowerCase().includes('user')) {
+            if (role.toLowerCase().includes('user')) {
                 return 'user';
             }
-            if (role.toLowerCase().includes('assistant') ||
-                role.toLowerCase().includes('ai') ||
-                authorNode.textContent?.toLowerCase().includes('assistant')) {
+            if (role.toLowerCase().includes('assistant') || role.toLowerCase().includes('ai')) {
                 return 'ai';
             }
         }
     }
 
-    // Fallback: check for common patterns
-    if (msgRow.classList.toString().toLowerCase().includes('user')) return 'user';
-    if (msgRow.classList.toString().toLowerCase().includes('assistant')) return 'ai';
+    // Check classes
+    const classes = msgRow.className.toLowerCase();
+    if (classes.includes('user')) return 'user';
+    if (classes.includes('assistant')) return 'ai';
+
+    // Check for avatar or icon indicators
+    const avatar = msgRow.querySelector('img[alt*="user" i], [data-testid*="user" i]');
+    if (avatar) return 'user';
+
+    const aiAvatar = msgRow.querySelector('img[alt*="assistant" i], [data-testid*="assistant" i], [data-testid*="ai" i]');
+    if (aiAvatar) return 'ai';
 
     return 'unknown';
 }
 
-function processMessage(msgRow, msgId) {
+function determineFirstMessageType(articles) {
+    // Try to determine the first message type
+    if (articles.length === 0) return 'user';
+
+    const firstType = determineMessageType(articles[0]);
+    if (firstType !== 'unknown') return firstType;
+
+    // Default assumption: first message is from user
+    return 'user';
+}
+
+function processMessage(msgRow, msgId, turnIndex, shouldCollapse = true, msgType = null) {
     try {
         if (msgRow.classList.contains('chat-focus-processed')) return;
 
-        const msgType = determineMessageType(msgRow);
-        const isUser = msgType === 'user';
-        let previewText = extractPreviewText(msgRow);
-
-        // Add classes
-        msgRow.classList.add('chat-focus-processed');
-
-        // Check if we should restore previous state
-        const wasExpanded = messageStates.get(msgId);
-        if (wasExpanded !== true) {
-            msgRow.classList.add('chat-focus-collapsed');
+        // If type not provided, try to determine it (fallback)
+        if (!msgType) {
+            msgType = determineMessageType(msgRow);
         }
 
-        // Add type-specific styling
+        const isUser = msgType === 'user';
+        const previewText = extractPreviewText(msgRow);
+
+        msgRow.classList.add('chat-focus-processed');
+
+        // Check saved state first, then use shouldCollapse parameter
+        const wasExpanded = messageStates.get(msgId);
+        if (wasExpanded === true) {
+            // User explicitly expanded this before, keep it expanded
+            shouldCollapse = false;
+        } else if (wasExpanded === false) {
+            // User explicitly collapsed this before, keep it collapsed
+            shouldCollapse = true;
+        }
+
+        // Add type-specific class (for styling only)
         if (isUser) {
             msgRow.classList.add('chat-focus-user-collapsed');
         } else {
             msgRow.classList.add('chat-focus-ai-collapsed');
         }
 
-        // Create label element
+        // Apply collapsed state if needed
+        if (shouldCollapse) {
+            msgRow.classList.add('chat-focus-collapsed');
+        }
+
+        // Create fold bar label
         const label = document.createElement('div');
         label.className = 'chat-focus-label';
         label.setAttribute('role', 'button');
         label.setAttribute('tabindex', '0');
-        label.setAttribute('aria-label', `Expand message: ${previewText}`);
-        label.innerHTML = `<span class="chat-focus-icon"></span> <span class="chat-focus-text">${escapeHtml(previewText)}</span>`;
+        label.setAttribute('aria-label', `${isUser ? 'User' : 'AI'} message, turn ${turnIndex}. Click to expand: ${previewText}`);
+        label.innerHTML = `
+            <span class="chat-focus-icon"></span>
+            <span class="chat-focus-text">${escapeHtml(previewText)}</span>
+            <span class="chat-focus-turn-index">#${turnIndex}</span>
+        `;
 
-        if (wasExpanded === true) {
+        // Show label only if message is collapsed
+        if (!shouldCollapse) {
             label.style.display = 'none';
         }
 
         msgRow.prepend(label);
 
-        // Create refold button - subtle, native style
+        // Create refold button
         const refoldBtn = document.createElement('div');
         refoldBtn.className = 'chat-focus-refold-btn';
         refoldBtn.setAttribute('role', 'button');
         refoldBtn.setAttribute('tabindex', '0');
-        refoldBtn.setAttribute('aria-label', 'Collapse message');
-        refoldBtn.textContent = 'Collapse';
+        refoldBtn.setAttribute('aria-label', 'Collapse this message');
+        refoldBtn.setAttribute('title', 'Collapse');
+        refoldBtn.textContent = 'Fold';
         msgRow.appendChild(refoldBtn);
 
-        // Store message data for TOC
+        // Store message data
         const fullText = extractFullText(msgRow);
         msgRow._chatFocusData = {
             id: msgId,
             type: msgType,
             previewText: previewText,
             fullText: fullText,
-            element: msgRow
+            element: msgRow,
+            turnIndex: turnIndex
         };
 
-        // Generate AI summary for longer messages
-        if (!isUser && fullText.length > 200) {
-            generateSummary(fullText, msgType).then(summary => {
-                if (summary && summary !== previewText) {
-                    const summaryBadge = document.createElement('div');
-                    summaryBadge.className = 'chat-focus-summary';
-                    summaryBadge.textContent = 'Summary';
-                    summaryBadge.title = summary;
-                    label.appendChild(summaryBadge);
-                    msgRow._chatFocusData.summary = summary;
-                    updateTableOfContents();
-                }
-            });
-        }
-
-        // Update TOC when message is processed
         updateTableOfContents();
 
-        // Toggle handlers
+        // Event handlers
         const expandMessage = (e) => {
             e?.stopPropagation();
             msgRow.classList.remove('chat-focus-collapsed');
             label.style.display = 'none';
             saveMessageState(msgId, true);
+            checkExpandCollapseState();
         };
 
         const collapseMessage = (e) => {
@@ -315,13 +316,12 @@ function processMessage(msgRow, msgId) {
             msgRow.classList.add('chat-focus-collapsed');
             label.style.display = 'flex';
             saveMessageState(msgId, false);
+            checkExpandCollapseState();
         };
 
-        // Click handlers
         label.addEventListener('click', expandMessage);
         refoldBtn.addEventListener('click', collapseMessage);
 
-        // Keyboard accessibility
         label.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -336,8 +336,22 @@ function processMessage(msgRow, msgId) {
             }
         });
 
-        // Store handlers for cleanup
         msgRow._chatFocusHandlers = { expandMessage, collapseMessage };
+
+        // Add double-click to collapse/expand
+        msgRow.addEventListener('dblclick', (e) => {
+            // Don't trigger if double-clicking on buttons, links, or inputs
+            if (e.target.closest('button, a, input, textarea, select, .chat-focus-label, .chat-focus-refold-btn')) {
+                return;
+            }
+
+            const isCollapsed = msgRow.classList.contains('chat-focus-collapsed');
+            if (isCollapsed) {
+                expandMessage(e);
+            } else {
+                collapseMessage(e);
+            }
+        });
     } catch (error) {
         console.error('ChatFocus: Error processing message', error);
     }
@@ -348,68 +362,398 @@ function foldOldMessages() {
 
     try {
         const articles = safeQuerySelectorAll(CONFIG.SELECTORS.articles);
+        if (articles.length === 0) return;
 
-        if (articles.length < settings.keepOpen + 1) return;
-
-        // Process all messages except the last N (keep recent ones open)
         const keepOpenCount = Math.max(1, settings.keepOpen);
-        for (let i = 0; i < articles.length - keepOpenCount; i++) {
-            const msgRow = articles[i];
+
+        // Determine first message type, then alternate
+        const firstType = determineFirstMessageType(articles);
+
+        // Process ALL messages so they all have handlers
+        articles.forEach((msgRow, index) => {
             const msgId = getMessageId(msgRow);
-            processMessage(msgRow, msgId);
-        }
+            const turnIndex = index + 1;
+            const shouldCollapse = index < articles.length - keepOpenCount;
+
+            // Alternate message types: if first is 'user', pattern is user, ai, user, ai...
+            // If first is 'ai', pattern is ai, user, ai, user...
+            let msgType;
+            if (firstType === 'user') {
+                msgType = index % 2 === 0 ? 'user' : 'ai';
+            } else {
+                msgType = index % 2 === 0 ? 'ai' : 'user';
+            }
+
+            processMessage(msgRow, msgId, turnIndex, shouldCollapse, msgType);
+        });
+
+        // Update toggle button state after processing
+        checkExpandCollapseState();
     } catch (error) {
         console.error('ChatFocus: Error in foldOldMessages', error);
     }
 }
 
-// ==================== KEYBOARD SHORTCUTS ====================
-function setupKeyboardShortcuts() {
-    document.addEventListener('keydown', async (e) => {
-        // Ctrl/Cmd + Shift + E: Expand all
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'E') {
-            e.preventDefault();
-            expandAllMessages();
-        }
+// ==================== TABLE OF CONTENTS ====================
+function createTableOfContents() {
+    if (document.getElementById('chat-focus-toc')) return;
 
-        // Ctrl/Cmd + Shift + C: Collapse all
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
-            e.preventDefault();
-            collapseAllMessages();
-        }
+    // Create TOC sidebar
+    const toc = document.createElement('div');
+    toc.id = 'chat-focus-toc';
+    toc.className = `chat-focus-toc ${tocVisible ? '' : 'hidden'}`;
 
-        // Ctrl/Cmd + Shift + T: Toggle extension
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'T') {
-            e.preventDefault();
-            await toggleExtension();
-        }
+    toc.innerHTML = `
+        <div class="chat-focus-toc-header">
+            <div class="chat-focus-toc-header-top">
+                <h3 class="chat-focus-toc-title">Contents</h3>
+                <button class="chat-focus-toc-close" aria-label="Close">&times;</button>
+            </div>
+            <div class="chat-focus-toc-search">
+                <span class="chat-focus-toc-search-icon">${ICONS.search}</span>
+                <input
+                    type="text"
+                    class="chat-focus-toc-search-input"
+                    placeholder="Search messages..."
+                    aria-label="Search messages"
+                />
+                <button class="chat-focus-toc-search-clear" aria-label="Clear search">&times;</button>
+            </div>
+        </div>
+        <div class="chat-focus-toc-content" id="chat-focus-toc-content"></div>
+    `;
 
-        // Ctrl/Cmd + Shift + O: Toggle Table of Contents
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'O') {
-            e.preventDefault();
-            toggleTOC();
+    document.body.appendChild(toc);
+
+    // Create toggle button
+    const toggle = document.createElement('button');
+    toggle.id = 'chat-focus-toc-toggle';
+    toggle.className = `chat-focus-toc-toggle ${tocVisible ? 'hidden' : ''}`;
+    toggle.innerHTML = '≡';
+    toggle.setAttribute('aria-label', 'Toggle Table of Contents');
+    document.body.appendChild(toggle);
+
+    // Event listeners
+    toc.querySelector('.chat-focus-toc-close').addEventListener('click', toggleTOC);
+    toggle.addEventListener('click', toggleTOC);
+
+    const searchInput = toc.querySelector('.chat-focus-toc-search-input');
+    const searchClear = toc.querySelector('.chat-focus-toc-search-clear');
+
+    searchInput.addEventListener('input', (e) => {
+        tocSearchQuery = e.target.value.toLowerCase();
+        searchClear.classList.toggle('visible', tocSearchQuery.length > 0);
+        filterTOCItems();
+    });
+
+    searchClear.addEventListener('click', () => {
+        searchInput.value = '';
+        tocSearchQuery = '';
+        searchClear.classList.remove('visible');
+        filterTOCItems();
+    });
+}
+
+function toggleTOC() {
+    tocVisible = !tocVisible;
+    const toc = document.getElementById('chat-focus-toc');
+    const toggle = document.getElementById('chat-focus-toc-toggle');
+
+    if (toc) toc.classList.toggle('hidden', !tocVisible);
+    if (toggle) toggle.classList.toggle('hidden', tocVisible);
+
+    if (tocVisible) updateTableOfContents();
+    saveTocState();
+}
+
+function filterTOCItems() {
+    const content = document.getElementById('chat-focus-toc-content');
+    if (!content) return;
+
+    const items = content.querySelectorAll('.chat-focus-toc-item');
+    items.forEach(item => {
+        const text = item.querySelector('.chat-focus-toc-item-text').textContent.toLowerCase();
+        const matches = text.includes(tocSearchQuery);
+        item.classList.toggle('hidden', !matches);
+    });
+}
+
+function updateTableOfContents() {
+    const content = document.getElementById('chat-focus-toc-content');
+    if (!content) return;
+
+    const messages = Array.from(document.querySelectorAll('.chat-focus-processed'));
+    const tocItems = messages
+        .map(msg => msg._chatFocusData)
+        .filter(data => data && data.element);
+
+    if (tocItems.length === 0) {
+        content.innerHTML = '<div class="chat-focus-toc-empty">No messages yet</div>';
+        return;
+    }
+
+    content.innerHTML = tocItems.map((data, index) => {
+        const displayText = data.previewText || 'Message';
+        const typeClass = data.type === 'user' ? 'user' : 'ai';
+        return `
+            <div class="chat-focus-toc-item" data-msg-id="${data.id}" tabindex="0" role="button">
+                <div class="chat-focus-toc-item-type ${typeClass}"></div>
+                <div class="chat-focus-toc-item-content">
+                    <div class="chat-focus-toc-item-text">${escapeHtml(displayText)}</div>
+                    <div class="chat-focus-toc-item-index">Turn ${data.turnIndex}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Add click handlers
+    content.querySelectorAll('.chat-focus-toc-item').forEach(item => {
+        const msgId = item.getAttribute('data-msg-id');
+        const msgData = tocItems.find(d => d.id === msgId);
+
+        const handleClick = () => {
+            if (msgData && msgData.element) {
+                msgData.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                if (msgData.element.classList.contains('chat-focus-collapsed')) {
+                    const label = msgData.element.querySelector('.chat-focus-label');
+                    if (label && msgData.element._chatFocusHandlers) {
+                        msgData.element._chatFocusHandlers.expandMessage();
+                    }
+                }
+
+                content.querySelectorAll('.chat-focus-toc-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            }
+        };
+
+        item.addEventListener('click', handleClick);
+        item.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleClick();
+            }
+        });
+    });
+
+    filterTOCItems();
+    updateActiveTOCItem();
+}
+
+function updateActiveTOCItem() {
+    const content = document.getElementById('chat-focus-toc-content');
+    if (!content || !tocVisible) return;
+
+    const messages = Array.from(document.querySelectorAll('.chat-focus-processed'));
+    const viewportTop = window.scrollY + 100;
+
+    let activeIndex = -1;
+    messages.forEach((msg, index) => {
+        const rect = msg.getBoundingClientRect();
+        if (rect.top <= 100 && rect.bottom >= 100) {
+            activeIndex = index;
         }
     });
+
+    content.querySelectorAll('.chat-focus-toc-item').forEach((item, index) => {
+        item.classList.toggle('active', index === activeIndex);
+    });
+}
+
+// ==================== FLOATING CONTROLS ====================
+let isAllExpanded = false; // Track expand/collapse state
+
+function createFloatingControls() {
+    if (document.getElementById('chat-focus-controls')) return;
+
+    const controls = document.createElement('div');
+    controls.id = 'chat-focus-controls';
+    controls.className = 'chat-focus-controls';
+
+    // Restore saved position
+    if (controlsPosition) {
+        controls.style.bottom = controlsPosition.bottom;
+        controls.style.right = controlsPosition.right;
+    }
+
+    // Create toggle expand/collapse button
+    const toggleBtn = createControlButton('toggle-expand', 'Expand All', ICONS.expand);
+    toggleBtn.addEventListener('click', toggleExpandCollapseAll);
+    controls.appendChild(toggleBtn);
+
+    // Divider
+    controls.appendChild(createDivider());
+
+    // Code mode button
+    const codeModeBtn = createControlButton('code-mode', 'Code Only', ICONS.code);
+    codeModeBtn.addEventListener('click', toggleCodeMode);
+    controls.appendChild(codeModeBtn);
+
+    // Divider
+    controls.appendChild(createDivider());
+
+    // TOC button
+    const tocBtn = createControlButton('toc', 'Contents', ICONS.list);
+    tocBtn.addEventListener('click', toggleTOC);
+    controls.appendChild(tocBtn);
+
+    // Settings button
+    const settingsBtn = createControlButton('settings', 'Toggle', ICONS.settings);
+    settingsBtn.addEventListener('click', toggleExtension);
+    controls.appendChild(settingsBtn);
+
+    document.body.appendChild(controls);
+
+    // Make draggable
+    makeDraggable(controls);
+
+    // Set initial state
+    updateToggleButton();
+}
+
+function createControlButton(id, label, iconSvg) {
+    const btn = document.createElement('button');
+    btn.className = `chat-focus-controls-btn ${id}`;
+    btn.setAttribute('aria-label', label);
+    btn.setAttribute('type', 'button');
+    btn.innerHTML = iconSvg;
+    return btn;
+}
+
+function createDivider() {
+    const div = document.createElement('div');
+    div.className = 'chat-focus-controls-divider';
+    return div;
+}
+
+function makeDraggable(element) {
+    let isDragging = false;
+    let startX, startY, startBottom, startRight;
+
+    element.addEventListener('mousedown', (e) => {
+        // Only drag if clicking on the background, not buttons
+        if (e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+
+        const rect = element.getBoundingClientRect();
+        startBottom = window.innerHeight - rect.bottom;
+        startRight = window.innerWidth - rect.right;
+
+        element.classList.add('dragging');
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+
+        const newBottom = Math.max(0, startBottom - deltaY);
+        const newRight = Math.max(0, startRight - deltaX);
+
+        element.style.bottom = `${newBottom}px`;
+        element.style.right = `${newRight}px`;
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            element.classList.remove('dragging');
+
+            // Save position
+            saveControlsPosition({
+                bottom: element.style.bottom,
+                right: element.style.right
+            });
+        }
+    });
+}
+
+// ==================== CONTROL ACTIONS ====================
+function toggleExpandCollapseAll() {
+    if (isAllExpanded) {
+        collapseAllMessages();
+        isAllExpanded = false;
+    } else {
+        expandAllMessages();
+        isAllExpanded = true;
+    }
+    updateToggleButton();
+}
+
+function checkExpandCollapseState() {
+    // Check if most messages are expanded or collapsed
+    const collapsed = document.querySelectorAll('.chat-focus-processed.chat-focus-collapsed').length;
+    const expanded = document.querySelectorAll('.chat-focus-processed:not(.chat-focus-collapsed)').length;
+
+    // Update state based on majority
+    isAllExpanded = expanded > collapsed;
+    updateToggleButton();
+}
+
+function updateToggleButton() {
+    const btn = document.querySelector('.chat-focus-controls-btn.toggle-expand');
+    if (!btn) return;
+
+    if (isAllExpanded) {
+        // Show collapse state
+        btn.innerHTML = ICONS.collapse;
+        btn.setAttribute('aria-label', 'Collapse All');
+    } else {
+        // Show expand state
+        btn.innerHTML = ICONS.expand;
+        btn.setAttribute('aria-label', 'Expand All');
+    }
 }
 
 function expandAllMessages() {
     const processed = document.querySelectorAll('.chat-focus-processed.chat-focus-collapsed');
     processed.forEach(msgRow => {
-        const label = msgRow.querySelector('.chat-focus-label');
-        if (label && msgRow._chatFocusHandlers) {
+        if (msgRow._chatFocusHandlers) {
             msgRow._chatFocusHandlers.expandMessage();
         }
     });
+    isAllExpanded = true;
+    updateToggleButton();
 }
 
 function collapseAllMessages() {
     const processed = document.querySelectorAll('.chat-focus-processed:not(.chat-focus-collapsed)');
-    processed.forEach(msgRow => {
-        const refoldBtn = msgRow.querySelector('.chat-focus-refold-btn');
-        if (refoldBtn && msgRow._chatFocusHandlers) {
+    const allMessages = Array.from(processed);
+
+    // Don't collapse the last message
+    if (allMessages.length > 0) {
+        allMessages.pop(); // Remove last message
+    }
+
+    allMessages.forEach(msgRow => {
+        if (msgRow._chatFocusHandlers) {
             msgRow._chatFocusHandlers.collapseMessage();
         }
     });
+    isAllExpanded = false;
+    updateToggleButton();
+}
+
+let isCodeMode = false;
+
+function toggleCodeMode() {
+    isCodeMode = !isCodeMode;
+    document.body.classList.toggle('chat-focus-code-mode', isCodeMode);
+
+    const btn = document.querySelector('.chat-focus-controls-btn.code-mode');
+    if (btn) btn.classList.toggle('active', isCodeMode);
+
+    if (isCodeMode) {
+        expandAllMessages();
+        showNotification("Code-Only Mode: Active");
+    } else {
+        showNotification("Code-Only Mode: Disabled");
+    }
 }
 
 async function toggleExtension() {
@@ -427,31 +771,51 @@ async function toggleExtension() {
 }
 
 function showNotification(message) {
-    // Create a temporary notification
     const notification = document.createElement('div');
     notification.className = 'chat-focus-notification';
     notification.textContent = message;
     document.body.appendChild(notification);
 
+    setTimeout(() => notification.classList.add('show'), 10);
     setTimeout(() => {
-        notification.classList.add('chat-focus-notification-show');
-    }, 10);
-
-    setTimeout(() => {
-        notification.classList.remove('chat-focus-notification-show');
-        setTimeout(() => notification.remove(), 300);
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 200);
     }, 2000);
 }
 
-// ==================== OBSERVER MANAGEMENT ====================
+// ==================== KEYBOARD SHORTCUTS ====================
+function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', async (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'E') {
+            e.preventDefault();
+            expandAllMessages();
+        }
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
+            e.preventDefault();
+            collapseAllMessages();
+        }
+        // Toggle expand/collapse with Space when controls focused
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === ' ') {
+            e.preventDefault();
+            toggleExpandCollapseAll();
+        }
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'T') {
+            e.preventDefault();
+            await toggleExtension();
+        }
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'O') {
+            e.preventDefault();
+            toggleTOC();
+        }
+    });
+}
+
+// ==================== OBSERVER ====================
 function initObserver() {
-    if (observer) {
-        observer.disconnect();
-    }
+    if (observer) observer.disconnect();
 
     const targetNode = document.body;
     if (!targetNode) {
-        console.warn('ChatFocus: document.body not found, retrying...');
         setTimeout(initObserver, 500);
         return;
     }
@@ -459,16 +823,12 @@ function initObserver() {
     const config = {
         childList: true,
         subtree: true,
-        attributes: false, // Optimize: don't watch attributes
-        characterData: false // Optimize: don't watch text changes
+        attributes: false,
+        characterData: false
     };
 
-    observer = new MutationObserver((mutationsList) => {
-        // Debounce with requestAnimationFrame for better performance
-        if (window.foldTimer) {
-            cancelAnimationFrame(window.foldTimer);
-        }
-
+    observer = new MutationObserver(() => {
+        if (window.foldTimer) cancelAnimationFrame(window.foldTimer);
         window.foldTimer = requestAnimationFrame(() => {
             setTimeout(foldOldMessages, settings.debounceDelay || CONFIG.DEBOUNCE_DELAY);
         });
@@ -489,221 +849,11 @@ function cleanup() {
     }
     if (window.foldTimer) {
         cancelAnimationFrame(window.foldTimer);
-        clearTimeout(window.foldTimer);
         window.foldTimer = null;
     }
-    // Remove TOC
-    const toc = document.getElementById('chat-focus-toc');
-    const toggle = document.getElementById('chat-focus-toc-toggle');
-    if (toc) toc.remove();
-    if (toggle) toggle.remove();
 
-    // Remove floating controls
-    const controls = document.getElementById('chat-focus-controls');
-    if (controls) controls.remove();
-}
-
-// ==================== TABLE OF CONTENTS ====================
-let tocVisible = false;
-let tocElement = null;
-let tocToggle = null;
-
-function createTableOfContents() {
-    // Create toggle button
-    if (!tocToggle) {
-        tocToggle = document.createElement('div');
-        tocToggle.id = 'chat-focus-toc-toggle';
-        tocToggle.className = 'chat-focus-toc-toggle';
-        tocToggle.innerHTML = '📑';
-        tocToggle.setAttribute('aria-label', 'Toggle Table of Contents');
-        tocToggle.addEventListener('click', toggleTOC);
-        document.body.appendChild(tocToggle);
-    }
-
-    // Create TOC sidebar
-    if (!tocElement) {
-        tocElement = document.createElement('div');
-        tocElement.id = 'chat-focus-toc';
-        tocElement.className = 'chat-focus-toc hidden';
-
-        const header = document.createElement('div');
-        header.className = 'chat-focus-toc-header';
-        header.innerHTML = `
-            <h3 class="chat-focus-toc-title">Table of Contents</h3>
-            <button class="chat-focus-toc-close" aria-label="Close">×</button>
-        `;
-
-        const content = document.createElement('div');
-        content.className = 'chat-focus-toc-content';
-        content.id = 'chat-focus-toc-content';
-
-        tocElement.appendChild(header);
-        tocElement.appendChild(content);
-
-        header.querySelector('.chat-focus-toc-close').addEventListener('click', () => {
-            toggleTOC();
-        });
-
-        document.body.appendChild(tocElement);
-    }
-}
-
-function toggleTOC() {
-    tocVisible = !tocVisible;
-    if (tocElement) {
-        tocElement.classList.toggle('hidden', !tocVisible);
-    }
-    if (tocToggle) {
-        tocToggle.classList.toggle('hidden', tocVisible);
-    }
-    if (tocVisible) {
-        updateTableOfContents();
-    }
-}
-
-function updateTableOfContents() {
-    if (!tocElement || !tocVisible) return;
-
-    const content = document.getElementById('chat-focus-toc-content');
-    if (!content) return;
-
-    // Get all processed messages
-    const messages = Array.from(document.querySelectorAll('.chat-focus-processed'));
-    const tocItems = messages
-        .map(msg => msg._chatFocusData)
-        .filter(data => data && data.element);
-
-    if (tocItems.length === 0) {
-        content.innerHTML = '<div style="padding: 20px; text-align: center; color: #8e8ea0; font-size: 13px;">No messages yet</div>';
-        return;
-    }
-
-    // Build TOC HTML
-    content.innerHTML = tocItems.map((data, index) => {
-        const displayText = data.summary || data.previewText || 'Message';
-        const typeClass = data.type === 'user' ? 'user' : 'ai';
-        return `
-            <div class="chat-focus-toc-item" data-msg-id="${data.id}" data-index="${index}">
-                <div class="chat-focus-toc-item-type ${typeClass}"></div>
-                <div class="chat-focus-toc-item-text">${escapeHtml(displayText)}</div>
-            </div>
-        `;
-    }).join('');
-
-    // Add click handlers
-    content.querySelectorAll('.chat-focus-toc-item').forEach(item => {
-        item.addEventListener('click', () => {
-            const msgId = item.getAttribute('data-msg-id');
-            const msgData = tocItems.find(d => d.id === msgId);
-            if (msgData && msgData.element) {
-                // Scroll to message
-                msgData.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-                // Expand if collapsed
-                if (msgData.element.classList.contains('chat-focus-collapsed')) {
-                    const label = msgData.element.querySelector('.chat-focus-label');
-                    if (label && msgData.element._chatFocusHandlers) {
-                        msgData.element._chatFocusHandlers.expandMessage();
-                    }
-                }
-
-                // Highlight active item
-                content.querySelectorAll('.chat-focus-toc-item').forEach(i => {
-                    i.classList.remove('active');
-                });
-                item.classList.add('active');
-
-                // Update active item on scroll
-                updateActiveTOCItem();
-            }
-        });
-    });
-
-    updateActiveTOCItem();
-}
-
-function updateActiveTOCItem() {
-    if (!tocElement || !tocVisible) return;
-
-    const content = document.getElementById('chat-focus-toc-content');
-    if (!content) return;
-
-    const messages = Array.from(document.querySelectorAll('.chat-focus-processed'));
-    const viewportTop = window.scrollY + 100;
-
-    let activeIndex = -1;
-    messages.forEach((msg, index) => {
-        const rect = msg.getBoundingClientRect();
-        if (rect.top <= viewportTop && rect.bottom >= viewportTop) {
-            activeIndex = index;
-        }
-    });
-
-    content.querySelectorAll('.chat-focus-toc-item').forEach((item, index) => {
-        item.classList.toggle('active', index === activeIndex);
-    });
-}
-
-// ==================== FLOATING CONTROL WIDGET ====================
-function createFloatingControls() {
-    // Remove existing controls if any
-    const existing = document.getElementById('chat-focus-controls');
-    if (existing) existing.remove();
-
-    const controls = document.createElement('div');
-    controls.id = 'chat-focus-controls';
-    controls.className = 'chat-focus-controls';
-
-    // Expand All button
-    const expandBtn = createControlButton('expand', 'Expand All', () => {
-        expandAllMessages();
-    });
-
-    // Collapse All button
-    const collapseBtn = createControlButton('collapse', 'Collapse All', () => {
-        collapseAllMessages();
-    });
-
-    // TOC button
-    const tocBtn = createControlButton('toc', 'Table of Contents', () => {
-        toggleTOC();
-    });
-
-    // Toggle Extension button
-    const toggleBtn = createControlButton('toggle', 'Toggle Extension', async () => {
-        await toggleExtension();
-    });
-
-    controls.appendChild(expandBtn);
-    controls.appendChild(collapseBtn);
-    controls.appendChild(tocBtn);
-    controls.appendChild(toggleBtn);
-
-    document.body.appendChild(controls);
-
-    // Show controls with animation
-    setTimeout(() => {
-        controls.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-    }, 100);
-}
-
-function createControlButton(type, tooltip, onClick) {
-    const btn = document.createElement('button');
-    btn.className = `chat-focus-control-btn ${type}`;
-    btn.setAttribute('aria-label', tooltip);
-    btn.setAttribute('type', 'button');
-
-    const tooltipEl = document.createElement('span');
-    tooltipEl.className = 'tooltip';
-    tooltipEl.textContent = tooltip;
-    btn.appendChild(tooltipEl);
-
-    btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        onClick();
-    });
-
-    return btn;
+    ['chat-focus-toc', 'chat-focus-toc-toggle', 'chat-focus-controls']
+        .forEach(id => document.getElementById(id)?.remove());
 }
 
 // ==================== INITIALIZATION ====================
@@ -716,27 +866,21 @@ async function init() {
             return;
         }
 
-        // Wait for page to be ready
+        const initDelay = () => {
+            initObserver();
+            foldOldMessages();
+        };
+
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
-                setTimeout(() => {
-                    initObserver();
-                    foldOldMessages();
-                }, CONFIG.INIT_DELAY);
+                setTimeout(initDelay, CONFIG.INIT_DELAY);
             });
         } else {
-            setTimeout(() => {
-                initObserver();
-                foldOldMessages();
-            }, CONFIG.INIT_DELAY);
+            setTimeout(initDelay, CONFIG.INIT_DELAY);
         }
 
         setupKeyboardShortcuts();
-
-        // Initialize Table of Contents
         createTableOfContents();
-
-        // Initialize floating control widget
         createFloatingControls();
 
         // Update active TOC item on scroll
@@ -750,15 +894,10 @@ async function init() {
         chrome.storage.onChanged.addListener((changes) => {
             if (changes.enabled) {
                 isEnabled = changes.enabled.newValue;
-                if (isEnabled) {
-                    foldOldMessages();
-                } else {
-                    expandAllMessages();
-                }
+                isEnabled ? foldOldMessages() : expandAllMessages();
             }
             if (changes.keepOpen) {
                 settings.keepOpen = changes.keepOpen.newValue;
-                // Reprocess all messages
                 document.querySelectorAll('.chat-focus-processed').forEach(el => {
                     el.classList.remove('chat-focus-processed');
                 });
@@ -774,11 +913,7 @@ async function init() {
             if (message.action === 'toggle') {
                 isEnabled = message.enabled;
                 settings.enabled = message.enabled;
-                if (isEnabled) {
-                    foldOldMessages();
-                } else {
-                    expandAllMessages();
-                }
+                isEnabled ? foldOldMessages() : expandAllMessages();
                 sendResponse({ success: true });
             } else if (message.action === 'expandAll') {
                 expandAllMessages();
@@ -791,14 +926,13 @@ async function init() {
                     Object.assign(settings, message.settings);
                     isEnabled = settings.enabled;
                 }
-                // Reprocess messages with new settings
                 document.querySelectorAll('.chat-focus-processed').forEach(el => {
                     el.classList.remove('chat-focus-processed');
                 });
                 foldOldMessages();
                 sendResponse({ success: true });
             }
-            return true; // Keep channel open for async response
+            return true;
         });
 
         console.log('ChatFocus: Extension loaded successfully');
@@ -807,8 +941,5 @@ async function init() {
     }
 }
 
-// Cleanup on page unload
 window.addEventListener('beforeunload', cleanup);
-
-// Initialize
 init();

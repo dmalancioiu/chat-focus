@@ -2,10 +2,12 @@
 
 document.addEventListener('DOMContentLoaded', async () => {
     const enabledCheckbox = document.getElementById('enabled');
-    const expandAllButton = document.getElementById('expandAll');
-    const collapseAllButton = document.getElementById('collapseAll');
+    const toggleButton = document.getElementById('toggleExpandCollapse');
+    const toggleIcon = document.getElementById('toggleIcon');
+    const toggleText = document.getElementById('toggleText');
     const openSettingsButton = document.getElementById('openSettings');
     const status = document.getElementById('status');
+    let isExpanded = false;
 
     // Load current state
     async function loadState() {
@@ -76,11 +78,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         }, 2000);
     }
 
+    // Toggle expand/collapse
+    function updateToggleButton() {
+        if (isExpanded) {
+            // Show collapse state
+            toggleIcon.innerHTML = '<polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/>';
+            toggleText.textContent = 'Collapse All';
+        } else {
+            // Show expand state
+            toggleIcon.innerHTML = '<polyline points="7 13 12 18 17 13"/><polyline points="7 6 12 11 17 6"/>';
+            toggleText.textContent = 'Expand All';
+        }
+    }
+
+    async function handleToggle() {
+        if (isExpanded) {
+            await sendAction('collapseAll');
+            isExpanded = false;
+        } else {
+            await sendAction('expandAll');
+            isExpanded = true;
+        }
+        updateToggleButton();
+    }
+
     // Event listeners
     enabledCheckbox.addEventListener('change', toggleExtension);
-    expandAllButton.addEventListener('click', () => sendAction('expandAll'));
-    collapseAllButton.addEventListener('click', () => sendAction('collapseAll'));
-    openSettingsButton.addEventListener('click', () => {
+    toggleButton.addEventListener('click', handleToggle);
+    openSettingsButton.addEventListener('click', (e) => {
+        e.preventDefault();
         chrome.runtime.openOptionsPage();
     });
 
