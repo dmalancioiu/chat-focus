@@ -23,6 +23,7 @@ let observer = null;
 let settings = { ...CONFIG };
 let messageStates = new Map(); // Track expanded/collapsed state per message
 let isEnabled = true;
+let saveStateTimeout;
 
 // ==================== UTILITY FUNCTIONS ====================
 function safeQuerySelector(selectors, parent = document) {
@@ -73,26 +74,21 @@ function getMessageId(msgRow) {
 // ==================== SETTINGS MANAGEMENT ====================
 async function loadSettings() {
     try {
-        const stored = await chrome.storage.sync.get([
-            'enabled',
-            'keepOpen',
-            'previewLength',
-            'messageStates'
-        ]);
+        // 1. Load User Preferences from SYNC (Cloud)
+        const syncData = await chrome.storage.sync.get(['enabled', 'keepOpen', 'previewLength']);
+        settings.enabled = syncData.enabled !== undefined ? syncData.enabled : CONFIG.DEFAULT_ENABLED;
+        settings.keepOpen = syncData.keepOpen || CONFIG.DEFAULT_KEEP_OPEN;
+        settings.previewLength = syncData.previewLength || CONFIG.DEFAULT_PREVIEW_LENGTH;
 
-        settings.enabled = stored.enabled !== undefined ? stored.enabled : CONFIG.DEFAULT_ENABLED;
-        settings.keepOpen = stored.keepOpen || CONFIG.DEFAULT_KEEP_OPEN;
-        settings.previewLength = stored.previewLength || CONFIG.DEFAULT_PREVIEW_LENGTH;
-
-        if (stored.messageStates) {
-            messageStates = new Map(Object.entries(stored.messageStates));
+        // 2. Load Message States from LOCAL (Disk) - This fixes the quota error
+        const localData = await chrome.storage.local.get(['messageStates']);
+        if (localData.messageStates) {
+            messageStates = new Map(Object.entries(localData.messageStates));
         }
 
         isEnabled = settings.enabled;
     } catch (error) {
         console.error('ChatFocus: Error loading settings', error);
-        // Use defaults on error
-        isEnabled = CONFIG.DEFAULT_ENABLED;
     }
 }
 
@@ -109,15 +105,24 @@ async function saveSettings() {
     }
 }
 
-async function saveMessageState(msgId, isExpanded) {
+function saveMessageState(msgId, isExpanded) {
+    // 1. Update memory immediately so the UI feels fast
     messageStates.set(msgId, isExpanded);
-    try {
-        await chrome.storage.sync.set({
-            messageStates: Object.fromEntries(messageStates)
-        });
-    } catch (error) {
-        console.error('ChatFocus: Error saving message state', error);
-    }
+
+    // 2. Clear any pending save (Debounce)
+    clearTimeout(saveStateTimeout);
+
+    // 3. Wait 1 second before actually writing to disk
+    saveStateTimeout = setTimeout(async () => {
+        try {
+            // Use .local instead of .sync to avoid "MAX_WRITE_OPERATIONS" error
+            await chrome.storage.local.set({
+                messageStates: Object.fromEntries(messageStates)
+            });
+        } catch (error) {
+            console.error('ChatFocus: Error saving message state', error);
+        }
+    }, 1000);
 }
 
 // ==================== CORE FUNCTIONALITY ====================
@@ -492,7 +497,7 @@ function cleanup() {
     const toggle = document.getElementById('chat-focus-toc-toggle');
     if (toc) toc.remove();
     if (toggle) toggle.remove();
-    
+
     // Remove floating controls
     const controls = document.getElementById('chat-focus-controls');
     if (controls) controls.remove();
@@ -644,38 +649,38 @@ function createFloatingControls() {
     // Remove existing controls if any
     const existing = document.getElementById('chat-focus-controls');
     if (existing) existing.remove();
-    
+
     const controls = document.createElement('div');
     controls.id = 'chat-focus-controls';
     controls.className = 'chat-focus-controls';
-    
+
     // Expand All button
     const expandBtn = createControlButton('expand', 'Expand All', () => {
         expandAllMessages();
     });
-    
+
     // Collapse All button
     const collapseBtn = createControlButton('collapse', 'Collapse All', () => {
         collapseAllMessages();
     });
-    
+
     // TOC button
     const tocBtn = createControlButton('toc', 'Table of Contents', () => {
         toggleTOC();
     });
-    
+
     // Toggle Extension button
     const toggleBtn = createControlButton('toggle', 'Toggle Extension', async () => {
         await toggleExtension();
     });
-    
+
     controls.appendChild(expandBtn);
     controls.appendChild(collapseBtn);
     controls.appendChild(tocBtn);
     controls.appendChild(toggleBtn);
-    
+
     document.body.appendChild(controls);
-    
+
     // Show controls with animation
     setTimeout(() => {
         controls.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
@@ -687,17 +692,17 @@ function createControlButton(type, tooltip, onClick) {
     btn.className = `chat-focus-control-btn ${type}`;
     btn.setAttribute('aria-label', tooltip);
     btn.setAttribute('type', 'button');
-    
+
     const tooltipEl = document.createElement('span');
     tooltipEl.className = 'tooltip';
     tooltipEl.textContent = tooltip;
     btn.appendChild(tooltipEl);
-    
+
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
         onClick();
     });
-    
+
     return btn;
 }
 
@@ -730,10 +735,10 @@ async function init() {
 
         // Initialize Table of Contents
         createTableOfContents();
-        
+
         // Initialize floating control widget
         createFloatingControls();
-        
+
         // Update active TOC item on scroll
         let scrollTimeout;
         window.addEventListener('scroll', () => {
