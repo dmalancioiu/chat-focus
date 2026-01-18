@@ -5,243 +5,301 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ChatFocus</title>
-  <link rel="stylesheet" href="../styles/ui-common.css">
   <style>
+    :root {
+      --bg: #ffffff;
+      --text: #09090b;
+      --text-sub: #71717a;
+      --border: #e4e4e7;
+      --hover: #f4f4f5;
+      --accent: #18181b;
+      /* distinct black accent */
+      --success: #10b981;
+      --radius: 12px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #09090b;
+        --text: #fafafa;
+        --text-sub: #a1a1aa;
+        --border: #27272a;
+        --hover: #18181b;
+        --accent: #fafafa;
+      }
+    }
+
     body {
       width: 320px;
-      padding: 0;
       margin: 0;
+      padding: 0;
+      /* Full bleed */
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
     }
 
-    .popup-container {
-      display: flex;
-      flex-direction: column;
-      min-height: 200px;
-    }
-
-    /* Header */
-    .popup-header {
-      padding: var(--cf-space-lg) var(--cf-space-lg) var(--cf-space-md);
-      border-bottom: 1px solid var(--cf-color-border-base);
-    }
-
-    .popup-title {
-      display: flex;
-      align-items: center;
-      gap: var(--cf-space-sm);
-      margin-bottom: var(--cf-space-xs);
-    }
-
-    .popup-icon {
-      width: 20px;
-      height: 20px;
-      background: var(--cf-color-accent);
-      border-radius: var(--cf-radius-sm);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .popup-icon svg {
-      width: 12px;
-      height: 12px;
-      stroke: white;
-      fill: none;
-      stroke-width: 2;
-    }
-
-    /* Main Controls */
-    .popup-main {
-      padding: var(--cf-space-lg);
-      display: flex;
-      flex-direction: column;
-      gap: var(--cf-space-lg);
-      flex: 1;
-    }
-
-    .popup-toggle {
+    /* --- Header --- */
+    .header {
+      padding: 20px 20px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: var(--cf-space-md);
-      background: var(--cf-color-bg-secondary);
-      border-radius: var(--cf-radius-md);
-      transition: background var(--cf-duration-fast) ease;
+      border-bottom: 1px solid transparent;
+      /* invisible border for spacing */
     }
 
-    .popup-toggle:hover {
-      background: var(--cf-color-bg-tertiary);
-    }
-
-    .popup-toggle-label {
-      font-size: var(--cf-text-md);
-      font-weight: 500;
-      color: var(--cf-color-text-primary);
-    }
-
-    .popup-actions {
+    .brand {
       display: flex;
-      flex-direction: column;
-      gap: var(--cf-space-sm);
+      align-items: center;
+      gap: 12px;
     }
 
-    /* Footer */
-    .popup-footer {
-      padding: var(--cf-space-md) var(--cf-space-lg);
-      border-top: 1px solid var(--cf-color-border-base);
-      background: var(--cf-color-bg-secondary);
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
     }
 
-    .popup-footer-link {
+    .brand-info h1 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .brand-info p {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin: 2px 0 0;
+      font-weight: 500;
+    }
+
+    .status-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 99px;
+      background: var(--hover);
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.2s ease;
+    }
+
+    .status-badge.active {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+    }
+
+    /* --- List --- */
+    .platform-list {
+      padding: 8px 12px;
+    }
+
+    .platform-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      margin-bottom: 4px;
+      border-radius: var(--radius);
+      transition: background 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .platform-row:hover {
+      background: var(--hover);
+    }
+
+    .row-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icon-container {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--hover);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: var(--cf-space-xs);
-      padding: var(--cf-space-sm);
-      color: var(--cf-color-text-secondary);
-      text-decoration: none;
-      font-size: var(--cf-text-sm);
-      border-radius: var(--cf-radius-sm);
-      transition: all var(--cf-duration-fast) ease;
+      border: 1px solid var(--border);
     }
 
-    .popup-footer-link:hover {
-      color: var(--cf-color-text-primary);
-      background: var(--cf-color-bg-overlay);
+    /* Use object-fit contain to handle different logo aspect ratios cleanly */
+    .icon-container img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
     }
 
-    .popup-footer-link svg {
-      width: 14px;
-      height: 14px;
-      stroke: currentColor;
-      fill: none;
-      stroke-width: 2;
+    .platform-name {
+      font-size: 14px;
+      font-weight: 500;
     }
 
-    /* Status Message */
-    .popup-status {
-      padding: var(--cf-space-sm) var(--cf-space-md);
-      background: var(--cf-color-success-bg);
-      color: var(--cf-color-success);
-      font-size: var(--cf-text-sm);
-      text-align: center;
-      border-radius: var(--cf-radius-md);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity var(--cf-duration-base) ease;
-    }
-
-    .popup-status.show {
-      opacity: 1;
-    }
-
-    .popup-status.error {
-      background: var(--cf-color-error-bg);
-      color: var(--cf-color-error);
-    }
-
-    /* Action Buttons */
-    .popup-btn {
-      display: flex;
-      align-items: center;
-      gap: var(--cf-space-sm);
-      padding: var(--cf-space-md);
-      background: transparent;
-      border: 1px solid var(--cf-color-border-base);
-      border-radius: var(--cf-radius-md);
-      color: var(--cf-color-text-primary);
-      font-family: var(--cf-font-system);
-      font-size: var(--cf-text-base);
-      cursor: pointer;
-      transition: all var(--cf-duration-fast) ease;
-      outline: none;
-    }
-
-    .popup-btn:hover {
-      background: var(--cf-color-bg-overlay);
-      border-color: var(--cf-color-border-strong);
-    }
-
-    .popup-btn:active {
-      transform: scale(0.98);
-    }
-
-    .popup-btn:focus-visible {
-      outline: 2px solid var(--cf-color-accent);
-      outline-offset: 2px;
-    }
-
-    .popup-btn svg {
-      width: 16px;
-      height: 16px;
-      stroke: currentColor;
-      fill: none;
-      stroke-width: 2;
+    /* --- Modern Toggle --- */
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
       flex-shrink: 0;
     }
 
-    .popup-btn-text {
-      flex: 1;
-      text-align: left;
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--border);
+      /* Subtle inactive state */
+      transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    input:checked+.slider {
+      background-color: var(--text);
+      /* Black/White high contrast toggle */
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(20px);
+    }
+
+    /* --- Footer --- */
+    .footer {
+      margin-top: 8px;
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 16px;
+    }
+
+    .footer-link {
+      font-size: 13px;
+      color: var(--text-sub);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+
+    .footer-link:hover {
+      color: var(--text);
+    }
+
+    .footer-link svg {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2px;
     }
   </style>
 </head>
 
 <body>
-  <div class="popup-container">
-    <!-- Header -->
-    <div class="popup-header">
-      <div class="popup-title">
-        <div class="popup-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
-          </svg>
+
+  <div class="header">
+    <div class="brand">
+      <img src="../assets/icons/icon128.png" alt="ChatFocus" class="brand-icon">
+      <div class="brand-info">
+        <h1>ChatFocus</h1>
+        <p>Control Center</p>
+      </div>
+    </div>
+    <div id="status-badge" class="status-badge">Idle</div>
+  </div>
+
+  <div class="platform-list">
+
+    <label class="platform-row">
+      <div class="row-info">
+        <div class="icon-container">
+          <img src="../assets/logos/chatgpt.png" alt="ChatGPT">
         </div>
-        <h1 class="cf-heading-lg">ChatFocus</h1>
+        <span class="platform-name">ChatGPT</span>
       </div>
-      <p class="cf-text-secondary">Clean, focused chat interface</p>
-    </div>
-
-    <!-- Main Controls -->
-    <div class="popup-main">
-      <!-- Enable/Disable Toggle -->
-      <div class="popup-toggle">
-        <span class="popup-toggle-label">Extension</span>
-        <label class="cf-toggle">
-          <input type="checkbox" id="enabled">
-          <span class="cf-toggle-slider"></span>
-        </label>
+      <div class="toggle">
+        <input type="checkbox" id="enabled-chatgpt" data-platform="chatgpt">
+        <span class="slider"></span>
       </div>
+    </label>
 
-      <!-- Action Buttons -->
-      <div class="popup-actions">
-        <button class="popup-btn" id="toggleExpandCollapse">
-          <svg viewBox="0 0 24 24" id="toggleIcon">
-            <polyline points="7 13 12 18 17 13" />
-            <polyline points="7 6 12 11 17 6" />
-          </svg>
-          <span class="popup-btn-text" id="toggleText">Expand All</span>
-        </button>
+    <label class="platform-row">
+      <div class="row-info">
+        <div class="icon-container">
+          <img src="../assets/logos/claude.png" alt="Claude">
+        </div>
+        <span class="platform-name">Claude</span>
       </div>
+      <div class="toggle">
+        <input type="checkbox" id="enabled-claude" data-platform="claude">
+        <span class="slider"></span>
+      </div>
+    </label>
 
-      <!-- Status Message -->
-      <div class="popup-status" id="status"></div>
-    </div>
+    <label class="platform-row">
+      <div class="row-info">
+        <div class="icon-container">
+          <img src="../assets/logos/gemini.png" alt="Gemini">
+        </div>
+        <span class="platform-name">Gemini</span>
+      </div>
+      <div class="toggle">
+        <input type="checkbox" id="enabled-gemini" data-platform="gemini">
+        <span class="slider"></span>
+      </div>
+    </label>
 
-    <!-- Footer -->
-    <div class="popup-footer">
-      <a href="#" class="popup-footer-link" id="openSettings">
-        <svg viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="3" />
-          <path
-            d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-        </svg>
-        <span>Settings</span>
-      </a>
+  </div>
+
+  <div class="footer">
+    <div class="footer-link" id="openSettings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <path
+          d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+        </path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+      Settings
     </div>
+    <a href="https://github.com/yourusername/chatfocus/issues" target="_blank" class="footer-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      Help
+    </a>
   </div>
 
   <script src="popup.js"></script>

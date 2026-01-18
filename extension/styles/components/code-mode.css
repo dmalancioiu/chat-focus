@@ -1,51 +1,86 @@
-/* ==================== CODE-ONLY MODE ==================== */
-/* Hide non-code in AI */
+/* ==================== CODE-ONLY MODE (THEME AWARE) ==================== */
+
+/* --- 1. THEME VARIABLES --- */
+:root {
+    /* User Message Styling (Light) */
+    --code-user-bg: linear-gradient(135deg, rgba(142, 142, 160, 0.04) 0%, transparent 100%);
+    --code-user-border: rgba(142, 142, 160, 0.3);
+
+    /* Turn Indicator (Light) */
+    --code-turn-bg: rgba(255, 255, 255, 0.8);
+    --code-turn-border: var(--cf-color-border-base, rgba(0, 0, 0, 0.1));
+    --code-turn-text: var(--cf-color-text-secondary, #6e6e80);
+
+    /* AI Divider (Light) */
+    --code-ai-border: var(--cf-color-border-light, rgba(0, 0, 0, 0.06));
+}
+
+/* Dark Mode Overrides (System Preference) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --code-user-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+        --code-user-border: rgba(255, 255, 255, 0.15);
+        --code-turn-bg: #2f2f2f;
+        --code-turn-border: rgba(255, 255, 255, 0.15);
+        --code-turn-text: #acacbe;
+        --code-ai-border: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Dark Mode Overrides (Manual Class) */
+html.dark {
+    --code-user-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%);
+    --code-user-border: rgba(255, 255, 255, 0.15);
+    --code-turn-bg: #2f2f2f;
+    --code-turn-border: rgba(255, 255, 255, 0.15);
+    --code-turn-text: #acacbe;
+    --code-ai-border: rgba(255, 255, 255, 0.1);
+}
+
+/* --- 2. LOGIC & STYLING --- */
+
+/* Hide non-code in AI messages */
 body.chat-focus-code-mode .chat-focus-ai-collapsed .markdown>*:not(pre):not(div[class*="code"]):not([class*="codeblock"]),
 body.chat-focus-code-mode .chat-focus-ai-collapsed [class*="markdown"]>*:not(pre):not(div[class*="code"]):not([class*="codeblock"]) {
     display: none !important;
 }
 
-/* User msg full */
+/* Ensure User message is fully visible */
 body.chat-focus-code-mode .chat-focus-user-collapsed .markdown>*,
 body.chat-focus-code-mode .chat-focus-user-collapsed [class*="markdown"]>* {
     display: block !important;
 }
 
-/* Spacing */
+/* Spacing adjustment for code blocks */
 body.chat-focus-code-mode .chat-focus-ai-collapsed pre,
 body.chat-focus-code-mode .chat-focus-ai-collapsed div[class*="code"],
 body.chat-focus-code-mode .chat-focus-ai-collapsed [class*="codeblock"] {
-    margin-top: var(--cf-space-2xl) !important;
-    margin-bottom: var(--cf-space-2xl) !important;
+    margin-top: var(--cf-space-2xl, 32px) !important;
+    margin-bottom: var(--cf-space-2xl, 32px) !important;
 }
 
+/* Remove top margin for the first code block */
 body.chat-focus-code-mode .chat-focus-ai-collapsed .markdown pre:first-child,
 body.chat-focus-code-mode .chat-focus-ai-collapsed [class*="markdown"] pre:first-child {
     margin-top: 0 !important;
 }
 
-/* User styling */
+/* User Styling (Context Box) */
 body.chat-focus-code-mode .chat-focus-user-collapsed:not(.chat-focus-user-before-no-code) {
-    padding: var(--cf-space-lg) var(--cf-space-xl) !important;
-    margin-bottom: var(--cf-space-lg) !important;
-    background: linear-gradient(135deg, rgba(142, 142, 160, 0.04) 0%, transparent 100%);
-    border-left: 3px solid rgba(142, 142, 160, 0.3);
-    border-radius: var(--cf-radius-md);
+    padding: var(--cf-space-lg, 16px) var(--cf-space-xl, 24px) !important;
+    margin-bottom: var(--cf-space-lg, 16px) !important;
+
+    background: var(--code-user-bg);
+    border-left: 3px solid var(--code-user-border);
+    border-radius: var(--cf-radius-md, 8px);
     position: relative;
 }
 
-@media (prefers-color-scheme: dark) {
-    body.chat-focus-code-mode .chat-focus-user-collapsed:not(.chat-focus-user-before-no-code) {
-        background: linear-gradient(135deg, rgba(142, 142, 160, 0.08) 0%, transparent 100%);
-        border-left-color: rgba(142, 142, 160, 0.35);
-    }
-}
-
-/* AI Code Styling */
+/* AI Code Group Styling */
 body.chat-focus-code-mode .chat-focus-ai-collapsed:not(.chat-focus-no-code) {
-    padding-bottom: var(--cf-space-3xl) !important;
-    margin-bottom: var(--cf-space-3xl) !important;
-    border-bottom: 2px solid var(--cf-color-border-light);
+    padding-bottom: var(--cf-space-3xl, 48px) !important;
+    margin-bottom: var(--cf-space-3xl, 48px) !important;
+    border-bottom: 2px solid var(--code-ai-border);
     position: relative;
 }
 
@@ -56,26 +91,20 @@ body.chat-focus-code-mode .chat-focus-ai-collapsed:not(.chat-focus-no-code) {
 
 body.chat-focus-code-mode .chat-focus-turn-indicator {
     display: inline-block;
-    margin-bottom: var(--cf-space-md);
-    font-size: var(--cf-text-xs);
+    margin-bottom: var(--cf-space-md, 12px);
+    font-size: 11px;
     font-weight: 600;
-    color: var(--cf-color-text-secondary);
-    background: rgba(255, 255, 255, 0.8);
-    padding: 6px var(--cf-space-md);
-    border-radius: var(--cf-radius-full);
-    border: 1.5px solid var(--cf-color-border-base);
-    font-family: var(--cf-font-system);
+
+    color: var(--code-turn-text);
+    background: var(--code-turn-bg);
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1.5px solid var(--code-turn-border);
+
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-    body.chat-focus-code-mode .chat-focus-turn-indicator {
-        background: rgba(52, 53, 65, 0.9);
-        border-color: rgba(255, 255, 255, 0.12);
-        color: var(--cf-color-text-secondary);
-    }
-}
-
-/* Hide non-code messages */
+/* Hide non-code messages completely */
 body.chat-focus-code-mode .chat-focus-processed.chat-focus-ai-collapsed.chat-focus-no-code {
     display: none !important;
 }
@@ -84,7 +113,7 @@ body.chat-focus-code-mode .chat-focus-processed.chat-focus-user-collapsed.chat-f
     display: none !important;
 }
 
-/* Hide regular labels */
+/* Hide the regular folding labels/buttons in code mode */
 body.chat-focus-code-mode .chat-focus-label,
 body.chat-focus-code-mode .chat-focus-refold-btn {
     display: none !important;

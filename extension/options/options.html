@@ -5,408 +5,430 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ChatFocus Settings</title>
-  <link rel="stylesheet" href="../styles/ui-common.css">
   <style>
+    /* ... (Previous CSS remains exactly the same) ... */
+    :root {
+      --bg: #ffffff;
+      --text: #09090b;
+      --text-sub: #71717a;
+      --border: #e4e4e7;
+      --hover: #f4f4f5;
+      --accent: #18181b;
+      --radius: 8px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #09090b;
+        --text: #fafafa;
+        --text-sub: #a1a1aa;
+        --border: #27272a;
+        --hover: #18181b;
+        --accent: #fafafa;
+      }
+    }
+
     body {
-      padding: 0;
       margin: 0;
-      min-height: 100vh;
-      background: var(--cf-color-bg-secondary);
-    }
-
-    .options-container {
-      max-width: 640px;
-      margin: 0 auto;
-      padding: var(--cf-space-3xl);
-    }
-
-    /* Header */
-    .options-header {
-      margin-bottom: var(--cf-space-3xl);
-    }
-
-    .options-title-row {
-      display: flex;
-      align-items: center;
-      gap: var(--cf-space-md);
-      margin-bottom: var(--cf-space-md);
-    }
-
-    .options-icon {
-      width: 32px;
-      height: 32px;
-      background: var(--cf-color-accent);
-      border-radius: var(--cf-radius-lg);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-    }
-
-    .options-icon svg {
-      width: 18px;
-      height: 18px;
-      stroke: white;
-      fill: none;
-      stroke-width: 2;
-    }
-
-    .options-title {
-      font-size: var(--cf-text-2xl);
-      font-weight: 600;
-      color: var(--cf-color-text-primary);
-    }
-
-    .options-subtitle {
-      color: var(--cf-color-text-secondary);
-      font-size: var(--cf-text-md);
-      margin-left: 44px;
-    }
-
-    /* Main Card */
-    .options-card {
-      background: var(--cf-color-bg-primary);
-      border: 1px solid var(--cf-color-border-base);
-      border-radius: var(--cf-radius-xl);
-      overflow: hidden;
-    }
-
-    /* Section */
-    .options-section {
-      padding: var(--cf-space-2xl);
-      border-bottom: 1px solid var(--cf-color-border-base);
-    }
-
-    .options-section:last-child {
-      border-bottom: none;
-    }
-
-    .options-section-title {
-      font-size: var(--cf-text-lg);
-      font-weight: 600;
-      color: var(--cf-color-text-primary);
-      margin-bottom: var(--cf-space-md);
-    }
-
-    /* Setting Row */
-    .setting-row {
-      margin-bottom: var(--cf-space-2xl);
-    }
-
-    .setting-row:last-child {
-      margin-bottom: 0;
-    }
-
-    .setting-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: var(--cf-space-lg);
-      margin-bottom: var(--cf-space-sm);
-    }
-
-    .setting-info {
-      flex: 1;
-    }
-
-    .setting-label {
-      font-size: var(--cf-text-md);
-      font-weight: 500;
-      color: var(--cf-color-text-primary);
-      margin-bottom: var(--cf-space-xs);
-      display: block;
-    }
-
-    .setting-description {
-      font-size: var(--cf-text-sm);
-      color: var(--cf-color-text-secondary);
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
       line-height: 1.5;
     }
 
-    .setting-control {
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 60px 20px 100px;
+    }
+
+    /* --- Header --- */
+    .header {
+      margin-bottom: 48px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background-image: url('../assets/icons/icon128.png');
+      background-size: cover;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-info h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+
+    .header-info p {
+      margin: 4px 0 0;
+      color: var(--text-sub);
+      font-size: 14px;
+    }
+
+    /* --- Sections --- */
+    .section {
+      margin-bottom: 48px;
+    }
+
+    .section-header {
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-sub);
+      margin: 0;
+    }
+
+    /* --- Rows --- */
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 16px 0;
+      gap: 24px;
+    }
+
+    .setting-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .setting-desc {
+      font-size: 13px;
+      color: var(--text-sub);
+      line-height: 1.4;
+      max-width: 400px;
+    }
+
+    /* --- Controls --- */
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
       flex-shrink: 0;
     }
 
-    /* Range Input Row */
-    .range-row {
-      display: flex;
-      align-items: center;
-      gap: var(--cf-space-lg);
-      margin-top: var(--cf-space-md);
-    }
-
-    .range-input-wrapper {
-      flex: 1;
-    }
-
-    .range-value-display {
-      font-size: var(--cf-text-md);
-      font-weight: 600;
-      color: var(--cf-color-accent);
-      min-width: 32px;
-      text-align: right;
-    }
-
-    /* Number Input */
-    .number-input-wrapper {
-      margin-top: var(--cf-space-md);
-      max-width: 200px;
-    }
-
-    /* Action Buttons */
-    .options-actions {
-      padding: var(--cf-space-2xl);
-      background: var(--cf-color-bg-secondary);
-      display: flex;
-      gap: var(--cf-space-md);
-    }
-
-    /* Status Message */
-    .options-status {
-      margin-top: var(--cf-space-lg);
-      padding: var(--cf-space-md) var(--cf-space-lg);
-      border-radius: var(--cf-radius-lg);
-      font-size: var(--cf-text-base);
-      text-align: center;
+    .toggle input {
       opacity: 0;
-      pointer-events: none;
-      transition: opacity var(--cf-duration-base) ease;
+      width: 0;
+      height: 0;
     }
 
-    .options-status.success {
-      opacity: 1;
-      background: var(--cf-color-success-bg);
-      color: var(--cf-color-success);
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--border);
+      transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 34px;
     }
 
-    .options-status.error {
-      opacity: 1;
-      background: var(--cf-color-error-bg);
-      color: var(--cf-color-error);
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
 
-    /* Shortcuts Table */
-    .shortcuts-table {
-      width: 100%;
+    input:checked+.slider {
+      background-color: var(--text);
     }
 
-    .shortcut-row {
+    input:checked+.slider:before {
+      transform: translateX(20px);
+    }
+
+    .input-group {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      padding: var(--cf-space-md) 0;
-      border-bottom: 1px solid var(--cf-color-border-light);
+      gap: 12px;
     }
 
-    .shortcut-row:last-child {
-      border-bottom: none;
+    .modern-input {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-family: inherit;
+      font-size: 14px;
+      width: 80px;
+      text-align: center;
+      transition: border-color 0.2s;
     }
 
-    .shortcut-description {
-      font-size: var(--cf-text-base);
-      color: var(--cf-color-text-primary);
+    .modern-input:focus {
+      outline: none;
+      border-color: var(--text);
     }
 
-    .shortcut-keys {
+    .range-wrapper {
       display: flex;
-      gap: var(--cf-space-xs);
+      align-items: center;
+      gap: 16px;
     }
 
-    /* Platform-specific shortcuts */
-    .platform-mac .shortcut-keys-win {
-      display: none;
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 140px;
+      background: transparent;
     }
 
-    .platform-win .shortcut-keys-mac {
-      display: none;
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: var(--text);
+      cursor: pointer;
+      margin-top: -6px;
     }
 
-    /* Info Box */
-    .info-box {
-      margin-top: var(--cf-space-2xl);
-      padding: var(--cf-space-lg);
-      background: var(--cf-color-bg-secondary);
-      border-radius: var(--cf-radius-lg);
-      border-left: 3px solid var(--cf-color-accent);
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 4px;
+      cursor: pointer;
+      background: var(--border);
+      border-radius: 2px;
     }
 
-    .info-box-title {
-      font-size: var(--cf-text-md);
-      font-weight: 600;
-      color: var(--cf-color-text-primary);
-      margin-bottom: var(--cf-space-sm);
+    /* --- Shortcut Grid --- */
+    .shortcut-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
     }
 
-    .info-box-text {
-      font-size: var(--cf-text-sm);
-      color: var(--cf-color-text-secondary);
-      line-height: 1.6;
+    .shortcut-item {
+      background: var(--hover);
+      padding: 16px;
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 1px solid transparent;
+    }
+
+    .shortcut-label {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .kbd {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .kbd-key {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 8px;
+      /* Slightly wider for words */
+      min-width: 20px;
+      text-align: center;
+      box-shadow: 0 1px 0 var(--border);
+      font-weight: 500;
+    }
+
+    /* --- Actions --- */
+    .actions {
+      margin-top: 60px;
+      display: flex;
+      gap: 12px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px 20px;
+      border-radius: 6px;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-sub);
+    }
+
+    .btn-ghost:hover {
+      color: var(--text);
+      background: var(--hover);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--text);
+      color: var(--bg);
+      padding: 8px 16px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
   </style>
 </head>
 
 <body>
-  <div class="options-container">
-    <!-- Header -->
-    <div class="options-header">
-      <div class="options-title-row">
-        <div class="options-icon">
-          <svg viewBox="0 0 24 24">
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
-          </svg>
-        </div>
-        <h1 class="options-title">ChatFocus Settings</h1>
-      </div>
-      <p class="options-subtitle">Configure your focused chat experience</p>
-    </div>
 
-    <!-- Main Card -->
-    <div class="options-card">
-      <!-- General Settings -->
-      <div class="options-section">
-        <h2 class="options-section-title">General</h2>
+  <div class="container">
 
-        <!-- Enable Extension -->
-        <div class="setting-row">
-          <div class="setting-header">
-            <div class="setting-info">
-              <label class="setting-label" for="enabled">Enable Extension</label>
-              <p class="setting-description">
-                Toggle ChatFocus on or off. When disabled, all messages remain expanded.
-              </p>
-            </div>
-            <div class="setting-control">
-              <label class="cf-toggle">
-                <input type="checkbox" id="enabled">
-                <span class="cf-toggle-slider"></span>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Keep Open Count -->
-        <div class="setting-row">
-          <div class="setting-info">
-            <label class="setting-label" for="keepOpen">Messages to Keep Open</label>
-            <p class="setting-description">
-              Number of recent messages to keep expanded. Older messages will be automatically collapsed.
-            </p>
-          </div>
-          <div class="range-row">
-            <div class="range-input-wrapper">
-              <input type="range" id="keepOpen" class="cf-range" min="1" max="5" value="1">
-            </div>
-            <span class="range-value-display" id="keepOpenValue">1</span>
-          </div>
-        </div>
-
-        <!-- Preview Length -->
-        <div class="setting-row">
-          <div class="setting-info">
-            <label class="setting-label" for="previewLength">Preview Text Length</label>
-            <p class="setting-description">
-              Maximum number of characters to show in collapsed message previews (30-200).
-            </p>
-          </div>
-          <div class="number-input-wrapper">
-            <input type="number" id="previewLength" class="cf-input" min="30" max="200" value="85">
-          </div>
-        </div>
-      </div>
-
-      <!-- Keyboard Shortcuts -->
-      <div class="options-section">
-        <h2 class="options-section-title">Keyboard Shortcuts</h2>
-
-        <div class="shortcuts-table">
-          <div class="shortcut-row">
-            <span class="shortcut-description">Expand all messages</span>
-            <div class="shortcut-keys shortcut-keys-win">
-              <span class="cf-kbd">Ctrl</span>
-              <span class="cf-kbd">Shift</span>
-              <span class="cf-kbd">E</span>
-            </div>
-            <div class="shortcut-keys shortcut-keys-mac">
-              <span class="cf-kbd">⌘</span>
-              <span class="cf-kbd">⇧</span>
-              <span class="cf-kbd">E</span>
-            </div>
-          </div>
-
-          <div class="shortcut-row">
-            <span class="shortcut-description">Collapse all messages</span>
-            <div class="shortcut-keys shortcut-keys-win">
-              <span class="cf-kbd">Ctrl</span>
-              <span class="cf-kbd">Shift</span>
-              <span class="cf-kbd">C</span>
-            </div>
-            <div class="shortcut-keys shortcut-keys-mac">
-              <span class="cf-kbd">⌘</span>
-              <span class="cf-kbd">⇧</span>
-              <span class="cf-kbd">C</span>
-            </div>
-          </div>
-
-          <div class="shortcut-row">
-            <span class="shortcut-description">Toggle extension on/off</span>
-            <div class="shortcut-keys shortcut-keys-win">
-              <span class="cf-kbd">Ctrl</span>
-              <span class="cf-kbd">Shift</span>
-              <span class="cf-kbd">T</span>
-            </div>
-            <div class="shortcut-keys shortcut-keys-mac">
-              <span class="cf-kbd">⌘</span>
-              <span class="cf-kbd">⇧</span>
-              <span class="cf-kbd">T</span>
-            </div>
-          </div>
-
-          <div class="shortcut-row">
-            <span class="shortcut-description">Toggle table of contents</span>
-            <div class="shortcut-keys shortcut-keys-win">
-              <span class="cf-kbd">Ctrl</span>
-              <span class="cf-kbd">Shift</span>
-              <span class="cf-kbd">O</span>
-            </div>
-            <div class="shortcut-keys shortcut-keys-mac">
-              <span class="cf-kbd">⌘</span>
-              <span class="cf-kbd">⇧</span>
-              <span class="cf-kbd">O</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="info-box">
-          <div class="info-box-title">Pro Tip</div>
-          <div class="info-box-text">
-            Click the floating controls at the bottom-right of ChatGPT to quickly expand/collapse all messages, toggle
-            code-only mode, or open the table of contents. You can drag the controls to reposition them.
-          </div>
-        </div>
-      </div>
-
-      <!-- Actions -->
-      <div class="options-actions">
-        <button class="cf-btn cf-btn-primary cf-btn-full" id="saveButton">
-          Save Settings
-        </button>
-        <button class="cf-btn cf-btn-ghost" id="resetButton">
-          Reset to Defaults
-        </button>
+    <div class="header">
+      <div class="header-icon"></div>
+      <div class="header-info">
+        <h1>Settings</h1>
+        <p>Manage default behaviors for ChatFocus.</p>
       </div>
     </div>
 
-    <!-- Status Message -->
-    <div class="options-status" id="statusMessage"></div>
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">General</h2>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <label class="setting-label" for="enabled">Enable Extension</label>
+          <div class="setting-desc">Master switch. Turn off to disable all features without uninstalling.</div>
+        </div>
+        <div class="toggle">
+          <input type="checkbox" id="enabled">
+          <span class="slider"></span>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <label class="setting-label" for="keepOpen">Messages to Keep Open</label>
+          <div class="setting-desc">How many recent messages stay expanded automatically.</div>
+        </div>
+        <div class="range-wrapper">
+          <span id="keepOpenValue" style="font-weight:600; width:12px;">1</span>
+          <input type="range" id="keepOpen" min="1" max="5" step="1">
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <label class="setting-label" for="previewLength">Preview Length</label>
+          <div class="setting-desc">Character limit for collapsed message previews.</div>
+        </div>
+        <div class="input-group">
+          <input type="number" id="previewLength" class="modern-input" min="30" max="300">
+          <span style="font-size:13px; color:var(--text-sub)">chars</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">Keyboard Shortcuts</h2>
+      </div>
+
+      <div class="shortcut-grid">
+        <div class="shortcut-item">
+          <span class="shortcut-label">Expand / Collapse All</span>
+          <div class="kbd">
+            <span class="kbd-key key-mod">Ctrl</span>
+            <span class="kbd-key key-shift">Shift</span>
+            <span class="kbd-key">Space</span>
+          </div>
+        </div>
+
+        <div class="shortcut-item">
+          <span class="shortcut-label">Chat Only Mode</span>
+          <div class="kbd">
+            <span class="kbd-key key-mod">Ctrl</span>
+            <span class="kbd-key key-shift">Shift</span>
+            <span class="kbd-key">C</span>
+          </div>
+        </div>
+
+        <div class="shortcut-item">
+          <span class="shortcut-label">Table of Contents</span>
+          <div class="kbd">
+            <span class="kbd-key key-mod">Ctrl</span>
+            <span class="kbd-key key-shift">Shift</span>
+            <span class="kbd-key">O</span>
+          </div>
+        </div>
+
+        <div class="shortcut-item">
+          <span class="shortcut-label">Session Stats</span>
+          <div class="kbd">
+            <span class="kbd-key key-mod">Ctrl</span>
+            <span class="kbd-key key-shift">Shift</span>
+            <span class="kbd-key">S</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="saveButton">Save Changes</button>
+      <button class="btn btn-ghost" id="resetButton">Reset Defaults</button>
+    </div>
+
   </div>
 
-  <!-- <script>
-    // Detect platform for keyboard shortcuts display
-    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-    document.body.classList.add(isMac ? 'platform-mac' : 'platform-win');
-  </script> -->
+  <div id="statusMessage" class="toast">Settings Saved</div>
+
   <script src="options.js"></script>
 </body>
 

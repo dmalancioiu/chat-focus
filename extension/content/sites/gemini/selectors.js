@@ -4,34 +4,51 @@
  */
 
 export const SELECTORS = {
-    // Message containers
+    // Message containers - Gemini uses custom elements and specific containers
     articles: [
-        'message-content',            // Gemini custom element
-        '.message-content',           // Class fallback
+        // Custom elements (newer Gemini)
+        'message-content',
+        'model-response',
+        'user-query',
+        // Class-based selectors
+        '.message-content',
         '[data-test-id="message-content"]',
-        '.user-query-container',      // User specific
-        '.model-response-container'   // Model specific
+        '.user-query-container',
+        '.model-response-container',
+        // Generic conversation containers
+        '[class*="conversation-container"] > div',
+        '[class*="message-container"]',
+        // Fallback to data attributes
+        '[data-message-index]',
+        '[data-is-model]'
     ],
 
     // Author role detection
     authorRole: [
-        '[data-is-model]',            // Attribute often used by Gemini
+        '[data-is-model]',
+        '[data-message-author]',
         '.user-query-container',
-        '.model-response-container'
+        '.model-response-container',
+        'user-query',
+        'model-response'
     ],
 
     // Text content
     textContent: [
         '.message-content',
+        '[data-test-id="message-text"]',
         '.model-response-text',
         '.user-query-text',
+        '[class*="markdown"]',
         'p'
     ],
 
     // Code blocks
     codeBlocks: [
-        'code-block',                 // Gemini often uses custom elements
+        'code-block',
+        'pre code',
         'pre',
+        '[class*="code-block"]',
         '.code-block-decoration'
     ]
 };

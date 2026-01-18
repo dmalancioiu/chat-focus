@@ -1,5 +1,5 @@
 import { ICONS } from '../../core/icons.js';
-import { tocVisible, tocSearchQuery, isCodeMode } from '../../core/state.js';
+import { tocVisible, tocSearchQuery, isCodeMode, pinnedMessages } from '../../core/state.js';
 import { saveTocState } from '../../storage/settings.js';
 import { escapeHtml } from '../../core/utils.js';
 import { clearAllSearchHighlights, highlightSearchTerm, updateSearchResultCount } from './search.js';
@@ -31,7 +31,7 @@ export function createTableOfContents() {
 
     document.body.appendChild(toc);
     setupTOCEvents(toc);
-    createTOCToggle();
+    //createTOCToggle();
 }
 
 function setupTOCEvents(toc) {
@@ -104,6 +104,16 @@ export function updateTableOfContents() {
         return;
     }
 
+    // Sort: pinned messages first, then by turn index
+    tocItems.sort((a, b) => {
+        const aIsPinned = pinnedMessages.has(a.id);
+        const bIsPinned = pinnedMessages.has(b.id);
+
+        if (aIsPinned && !bIsPinned) return -1;
+        if (!aIsPinned && bIsPinned) return 1;
+        return a.turnIndex - b.turnIndex;
+    });
+
     // Render Items
     content.innerHTML = tocItems.map((data) => renderTOCItem(data)).join('');
 
@@ -115,12 +125,14 @@ export function updateTableOfContents() {
 
 function renderTOCItem(data) {
     const typeLabel = isCodeMode.value ? (data.type === 'user' ? 'Question' : 'Code') : '';
+    const isPinned = pinnedMessages.has(data.id);
     return `
-        <div class="chat-focus-toc-item ${isCodeMode.value ? 'code-mode-item' : ''}" data-msg-id="${data.id}" tabindex="0" role="button">
+        <div class="chat-focus-toc-item ${isCodeMode.value ? 'code-mode-item' : ''} ${isPinned ? 'pinned' : ''}" data-msg-id="${data.id}" tabindex="0" role="button">
             <div class="chat-focus-toc-item-type ${data.type === 'user' ? 'user' : 'ai'}"></div>
             <div class="chat-focus-toc-item-content">
                 <div class="chat-focus-toc-item-text">${escapeHtml(data.previewText)}</div>
                 <div class="chat-focus-toc-item-meta">
+                    ${isPinned ? `<span class="chat-focus-toc-item-pin">${ICONS.pinFilled}</span>` : ''}
                     ${typeLabel ? `<span class="chat-focus-toc-item-label">${typeLabel}</span>` : ''}
                     <span class="chat-focus-toc-item-index">Turn ${data.turnIndex}</span>
                 </div>
@@ -146,7 +158,8 @@ function attachItemHandlers(content, tocItems) {
                     setTimeout(() => highlightSearchTerm(msgData.element, tocSearchQuery.value), 300);
                 }
 
-                content.querySelectorAll('.item').forEach(i => i.classList.remove('active'));
+                // Clear all active items first
+                content.querySelectorAll('.chat-focus-toc-item').forEach(i => i.classList.remove('active'));
                 item.classList.add('active');
             }
         };

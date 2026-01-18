@@ -15,5 +15,8 @@ export const CONFIG = {
         articles: ['article', '[data-message-id]', '[role="article"]'],
         authorRole: ['[data-message-author-role]', '[data-author-role]', '[role]'],
         textContent: ['.markdown', '.whitespace-pre-wrap', '[data-message-content]', 'p']
-    }
+    },
+
+    // Active adapter will be set during initialization
+    ADAPTER: null
 };

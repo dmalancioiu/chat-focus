@@ -1,11 +1,13 @@
 import { CONFIG } from '../../core/config.js';
-import { messageStates, isCodeMode } from '../../core/state.js';
-import { settings, saveMessageState } from '../../storage/settings.js';
+import { messageStates, pinnedMessages, isCodeMode } from '../../core/state.js';
+import { settings, saveMessageState, togglePinnedMessage } from '../../storage/settings.js';
 import { escapeHtml, safeQuerySelectorAll } from '../../core/utils.js';
 import { determineMessageType, determineFirstMessageType, extractPreviewText, getMessageId } from './processing.js';
 import { updateTableOfContents } from '../table-of-contents/toc.js';
 import { checkExpandCollapseState } from '../controls/actions.js';
 import { updateCodeModeClasses } from '../code-mode/code-mode.js';
+import { ICONS } from '../../core/icons.js';
+import { updateStats } from '../stats/stats.js';
 
 export function processMessage(msgRow, msgId, turnIndex, shouldCollapse = true, msgType = null) {
     try {
@@ -22,22 +24,34 @@ export function processMessage(msgRow, msgId, turnIndex, shouldCollapse = true, 
         msgRow.classList.add('chat-focus-processed');
         msgRow.setAttribute('data-turn-index', turnIndex);
 
+        // Check if message is pinned
+        const isPinned = pinnedMessages.has(msgId);
+
         // check saved state
         const wasExpanded = messageStates.get(msgId);
-        if (wasExpanded === true) shouldCollapse = false;
-        else if (wasExpanded === false) shouldCollapse = true;
+        if (isPinned) {
+            // Pinned messages are always expanded
+            shouldCollapse = false;
+        } else if (wasExpanded === true) {
+            shouldCollapse = false;
+        } else if (wasExpanded === false) {
+            shouldCollapse = true;
+        }
 
         // Apply classes
         if (isUser) msgRow.classList.add('chat-focus-user-collapsed');
         else msgRow.classList.add('chat-focus-ai-collapsed');
 
         if (shouldCollapse) msgRow.classList.add('chat-focus-collapsed');
+        if (isPinned) msgRow.classList.add('chat-focus-pinned');
 
         // Create UI elements
         const label = createFoldLabel(isUser, turnIndex, previewText, shouldCollapse);
         const refoldBtn = createRefoldBtn();
+        const pinBtn = createPinBtn(isPinned);
 
         msgRow.prepend(label);
+        msgRow.appendChild(pinBtn);
         msgRow.appendChild(refoldBtn);
 
         // Store data for other modules
@@ -53,9 +67,10 @@ export function processMessage(msgRow, msgId, turnIndex, shouldCollapse = true, 
         //updateTableOfContents();
 
         // Bind Events
-        const handlers = createEventHandlers(msgRow, label, msgId);
+        const handlers = createEventHandlers(msgRow, label, msgId, pinBtn);
         label.addEventListener('click', handlers.expandMessage);
         refoldBtn.addEventListener('click', handlers.collapseMessage);
+        pinBtn.addEventListener('click', handlers.togglePin);
 
         // Keyboard support
         label.addEventListener('keydown', (e) => {
@@ -68,6 +83,12 @@ export function processMessage(msgRow, msgId, turnIndex, shouldCollapse = true, 
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 handlers.collapseMessage(e);
+            }
+        });
+        pinBtn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handlers.togglePin(e);
             }
         });
 
@@ -107,10 +128,26 @@ function createRefoldBtn() {
     return btn;
 }
 
-function createEventHandlers(msgRow, label, msgId) {
+function createPinBtn(isPinned) {
+    const btn = document.createElement('button');
+    btn.className = 'chat-focus-pin-btn';
+    btn.setAttribute('role', 'button');
+    btn.setAttribute('tabindex', '0');
+    btn.setAttribute('aria-label', isPinned ? 'Unpin message' : 'Pin message');
+    btn.innerHTML = isPinned ? ICONS.pinFilled : ICONS.pin;
+    if (isPinned) {
+        btn.classList.add('pinned');
+    }
+    return btn;
+}
+
+function createEventHandlers(msgRow, label, msgId, pinBtn) {
     return {
         expandMessage: (e) => {
             e?.stopPropagation();
+            // Can't collapse pinned messages
+            if (pinnedMessages.has(msgId)) return;
+
             msgRow.classList.remove('chat-focus-collapsed');
             label.style.display = 'none';
             saveMessageState(msgId, true);
@@ -119,11 +156,37 @@ function createEventHandlers(msgRow, label, msgId) {
         },
         collapseMessage: (e) => {
             e?.stopPropagation();
+            // Can't collapse pinned messages
+            if (pinnedMessages.has(msgId)) return;
+
             msgRow.classList.add('chat-focus-collapsed');
             label.style.display = 'flex';
             saveMessageState(msgId, false);
             checkExpandCollapseState();
             if (isCodeMode.value) updateCodeModeClasses();
+        },
+        togglePin: async (e) => {
+            e?.stopPropagation();
+            const isPinned = await togglePinnedMessage(msgId);
+
+            // Update button appearance
+            pinBtn.innerHTML = isPinned ? ICONS.pinFilled : ICONS.pin;
+            pinBtn.setAttribute('aria-label', isPinned ? 'Unpin message' : 'Pin message');
+            pinBtn.classList.toggle('pinned', isPinned);
+
+            // Update message state
+            msgRow.classList.toggle('chat-focus-pinned', isPinned);
+
+            if (isPinned) {
+                // Expand pinned message
+                msgRow.classList.remove('chat-focus-collapsed');
+                label.style.display = 'none';
+            }
+
+            // Update TOC to reorder pinned messages
+            updateTableOfContents();
+            updateStats();
+            checkExpandCollapseState();
         }
     };
 }
@@ -131,8 +194,28 @@ function createEventHandlers(msgRow, label, msgId) {
 export function foldOldMessages() {
     if (!settings.enabled) return;
 
-    const articles = safeQuerySelectorAll(CONFIG.SELECTORS.articles);
-    if (articles.length === 0) return;
+    // Use adapter-specific getMessages if available
+    let articles;
+    if (CONFIG.ADAPTER && CONFIG.ADAPTER.getMessages) {
+        articles = CONFIG.ADAPTER.getMessages();
+    } else {
+        articles = safeQuerySelectorAll(CONFIG.SELECTORS.articles);
+    }
+
+    if (articles.length === 0) {
+        return;
+    }
+
+    // Check if all messages are already processed
+    const unprocessedMessages = articles.filter(msg => !msg.classList.contains('chat-focus-processed'));
+    if (unprocessedMessages.length === 0) {
+        return; // Nothing to do
+    }
+
+    // Only log when we have new messages to process
+    if (unprocessedMessages.length > 0) {
+        console.log(`ChatFocus: Processing ${unprocessedMessages.length} new message(s)`);
+    }
 
     const keepOpenCount = Math.max(1, settings.keepOpen);
     const firstType = determineFirstMessageType(articles);
@@ -151,6 +234,7 @@ export function foldOldMessages() {
     });
 
     updateTableOfContents();
+    updateStats();
 
     checkExpandCollapseState();
     if (isCodeMode.value) updateCodeModeClasses();

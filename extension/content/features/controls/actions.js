@@ -36,6 +36,18 @@ function updateToggleButton() {
     const btn = document.querySelector('.chat-focus-controls-btn.toggle-expand');
     if (!btn) return;
 
-    btn.innerHTML = isAllExpanded ? ICONS.collapse : ICONS.expand;
+    // 1. Update the Icon (Target the wrapper, not the whole button)
+    const iconWrapper = btn.querySelector('.cf-btn-icon');
+    if (iconWrapper) {
+        iconWrapper.innerHTML = isAllExpanded ? ICONS.collapse : ICONS.expand;
+    }
+
+    // 2. Update the Tooltip Label (So it says "Collapse All" when open)
+    const tooltipLabel = btn.querySelector('.cf-tooltip-label');
+    if (tooltipLabel) {
+        tooltipLabel.textContent = isAllExpanded ? 'Collapse All' : 'Expand All';
+    }
+
+    // 3. Update Accessibility Label
     btn.ariaLabel = isAllExpanded ? 'Collapse All' : 'Expand All';
 }

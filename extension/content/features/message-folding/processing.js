@@ -25,6 +25,13 @@ export function extractPreviewText(msgRow) {
 // }
 
 export function determineMessageType(msgRow) {
+    // Use adapter-specific detection if available
+    if (CONFIG.ADAPTER && CONFIG.ADAPTER.detectMessageType) {
+        const type = CONFIG.ADAPTER.detectMessageType(msgRow);
+        if (type !== 'unknown') return type;
+    }
+
+    // Fallback to generic detection
     // 1. Try Author Role attributes
     for (const selector of CONFIG.SELECTORS.authorRole) {
         const authorNode = safeQuerySelector([selector], msgRow);

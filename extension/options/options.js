@@ -1,9 +1,15 @@
-// Options page script for ChatFocus
-
-const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-document.body.classList.add(isMac ? 'platform-mac' : 'platform-win');
-
 document.addEventListener('DOMContentLoaded', async () => {
+    // === 1. OS Detection for Shortcuts ===
+    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+
+    // Update key symbols
+    const modKeys = document.querySelectorAll('.key-mod');
+    const shiftKeys = document.querySelectorAll('.key-shift');
+
+    modKeys.forEach(el => el.textContent = isMac ? '⌘' : 'Ctrl');
+    shiftKeys.forEach(el => el.textContent = isMac ? '⇧' : 'Shift');
+
+    // === 2. Element References ===
     const enabledCheckbox = document.getElementById('enabled');
     const keepOpenSlider = document.getElementById('keepOpen');
     const keepOpenValue = document.getElementById('keepOpenValue');
@@ -12,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const resetButton = document.getElementById('resetButton');
     const statusMessage = document.getElementById('statusMessage');
 
-    // Load current settings
+    // === 3. Logic ===
     async function loadSettings() {
         try {
             const settings = await chrome.storage.sync.get([
@@ -31,8 +37,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
-    // Save settings
     async function saveSettings() {
+        saveButton.disabled = true;
+        saveButton.textContent = 'Saving...';
+
         try {
             const settings = {
                 enabled: enabledCheckbox.checked,
@@ -40,73 +48,75 @@ document.addEventListener('DOMContentLoaded', async () => {
                 previewLength: parseInt(previewLengthInput.value, 10)
             };
 
-            // Validate
             if (settings.keepOpen < 1 || settings.keepOpen > 5) {
                 showStatus('Keep Open must be between 1 and 5', 'error');
-                return;
+                return; // Guard clause
             }
-
-            if (settings.previewLength < 30 || settings.previewLength > 200) {
-                showStatus('Preview Length must be between 30 and 200', 'error');
+            if (settings.previewLength < 30 || settings.previewLength > 300) {
+                showStatus('Preview Length must be between 30 and 300', 'error');
                 return;
             }
 
             await chrome.storage.sync.set(settings);
             showStatus('Settings saved successfully!', 'success');
 
-            // Notify content scripts of changes
-            const tabs = await chrome.tabs.query({
-                url: ['https://chatgpt.com/*', 'https://claude.ai/*']
-            });
+            // Notify Active Tabs
+            const targetUrls = [
+                'https://chatgpt.com/*',
+                'https://chat.openai.com/*',
+                'https://claude.ai/*',
+                'https://gemini.google.com/*'
+            ];
 
-            tabs.forEach(tab => {
-                chrome.tabs.sendMessage(tab.id, { action: 'settingsUpdated', settings });
-            });
+            const tabs = await chrome.tabs.query({ url: targetUrls });
+            for (const tab of tabs) {
+                try {
+                    await chrome.tabs.sendMessage(tab.id, {
+                        action: 'settingsUpdated',
+                        settings
+                    });
+                } catch (err) {
+                    // Ignore sleeping tabs
+                }
+            }
         } catch (error) {
-            console.error('Error saving settings:', error);
+            console.error('Error saving:', error);
             showStatus('Error saving settings', 'error');
+        } finally {
+            setTimeout(() => {
+                saveButton.disabled = false;
+                saveButton.textContent = 'Save Changes';
+            }, 500);
         }
     }
 
-    // Reset to defaults
     async function resetSettings() {
-        if (!confirm('Reset all settings to defaults?')) return;
-
+        if (!confirm('Reset all settings to default?')) return;
         try {
-            await chrome.storage.sync.clear();
+            await chrome.storage.sync.remove(['enabled', 'keepOpen', 'previewLength']);
             await loadSettings();
             showStatus('Settings reset to defaults', 'success');
+            saveSettings(); // Sync to tabs
         } catch (error) {
-            console.error('Error resetting settings:', error);
-            showStatus('Error resetting settings', 'error');
+            console.error('Error resetting:', error);
         }
     }
 
-    // Show status message
     function showStatus(message, type) {
         statusMessage.textContent = message;
-        statusMessage.className = `status-message ${type}`;
+        statusMessage.classList.add('visible');
         setTimeout(() => {
-            statusMessage.className = 'status-message';
+            statusMessage.classList.remove('visible');
         }, 3000);
     }
 
-    // Update range value display
-    keepOpenSlider.addEventListener('input', (e) => {
-        keepOpenValue.textContent = e.target.value;
-    });
-
-    // Event listeners
+    // === 4. Event Listeners ===
+    keepOpenSlider.addEventListener('input', (e) => keepOpenValue.textContent = e.target.value);
     saveButton.addEventListener('click', saveSettings);
     resetButton.addEventListener('click', resetSettings);
-
-    // Allow Enter key to save
     previewLengthInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            saveSettings();
-        }
+        if (e.key === 'Enter') saveSettings();
     });
 
-    // Load settings on page load
     await loadSettings();
 });

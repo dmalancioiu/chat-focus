@@ -52,6 +52,7 @@
                 "styles/components/toc.css",
                 "styles/components/controls.css",
                 "styles/components/code-mode.css",
+                "styles/components/stats.css",
                 "styles/themes/dark.css"
             ],
             "run_at": "document_idle"

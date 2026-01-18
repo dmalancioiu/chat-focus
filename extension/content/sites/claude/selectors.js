@@ -4,34 +4,43 @@
  */
 
 export const SELECTORS = {
-    // Message containers
+    // Message containers - Claude uses a more generic structure
     articles: [
-        '.font-user-message',
-        '.font-claude-message',
+        // Try specific message containers first
         '[data-testid="user-message"]',
         '[data-testid="claude-message"]',
-        '.grid-cols-1 > div' // Fallback for message rows
+        '[data-testid*="message"]',
+        // Main conversation container children
+        'main > div > div > div',
+        // Grid layout children (common pattern)
+        '.grid > div[class*="group"]',
+        '.font-user-message',
+        '.font-claude-message'
     ],
 
     // Author role detection (used to classify User vs AI)
     authorRole: [
-        '.font-user-message',    // User class
-        '.font-claude-message',  // AI class
         '[data-testid="user-message"]',
-        '[data-testid="claude-message"]'
+        '[data-testid="claude-message"]',
+        '.font-user-message',
+        '.font-claude-message'
     ],
 
-    // Text content
+    // Text content - Claude typically uses whitespace-pre-wrap
     textContent: [
+        '[data-testid="message-content"]',
         '.whitespace-pre-wrap',
+        'p',
+        'div[class*="prose"]',
         '.font-user-message',
         '.font-claude-message'
     ],
 
     // Code blocks
     codeBlocks: [
+        'pre code',
         'pre',
-        '.code-block',
-        'code'
+        '[class*="code-block"]',
+        'code[class*="language-"]'
     ]
 };

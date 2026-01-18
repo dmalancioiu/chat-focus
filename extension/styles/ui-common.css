@@ -311,15 +311,15 @@ body {
   transition: transform var(--cf-duration-base) var(--cf-ease-out);
 }
 
-.cf-toggle input:checked + .cf-toggle-slider {
+.cf-toggle input:checked+.cf-toggle-slider {
   background: var(--cf-color-accent);
 }
 
-.cf-toggle input:checked + .cf-toggle-slider::before {
+.cf-toggle input:checked+.cf-toggle-slider::before {
   transform: translateX(20px);
 }
 
-.cf-toggle input:focus-visible + .cf-toggle-slider {
+.cf-toggle input:focus-visible+.cf-toggle-slider {
   outline: 2px solid var(--cf-color-accent);
   outline-offset: 2px;
 }
@@ -496,6 +496,7 @@ body {
     opacity: 0;
     transform: translateY(-4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -511,6 +512,7 @@ body {
    ========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {

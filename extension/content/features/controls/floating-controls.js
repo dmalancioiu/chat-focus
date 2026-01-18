@@ -4,7 +4,11 @@ import { saveControlsPosition } from '../../storage/settings.js';
 import { toggleExpandCollapseAll, checkExpandCollapseState } from './actions.js';
 import { toggleCodeMode } from '../code-mode/code-mode.js';
 import { toggleTOC } from '../table-of-contents/toc.js';
-import { toggleExtension } from '../../main.js'; // You will export this from main
+import { toggleStats } from '../stats/stats.js';
+import { openPopup } from '../../main.js';
+
+// Detect OS for shortcuts
+const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
 
 export function createFloatingControls() {
     if (document.getElementById('chat-focus-controls')) return;
@@ -18,24 +22,52 @@ export function createFloatingControls() {
         controls.style.right = controlsPosition.value.right;
     }
 
-    const toggleBtn = createButton('toggle-expand', 'Expand All', ICONS.expand, toggleExpandCollapseAll);
-    const codeBtn = createButton('code-mode', 'Code Only', ICONS.code, toggleCodeMode);
-    const tocBtn = createButton('toc', 'Contents', ICONS.list, toggleTOC);
-    const settingsBtn = createButton('settings', 'Toggle Extension', ICONS.settings, toggleExtension);
+    const toggleBtn = createButton('toggle-expand', 'Expand All', ICONS.expand, toggleExpandCollapseAll, 'Ctrl+Shift+Space');
+    const codeBtn = createButton('code-mode', 'Code Only', ICONS.code, toggleCodeMode, 'Ctrl+Shift+C');
+    const tocBtn = createButton('toc', 'Contents', ICONS.list, toggleTOC, 'Ctrl+Shift+O');
+    const statsBtn = createButton('stats', 'Stats', ICONS.stats, toggleStats, 'Ctrl+Shift+S');
+    const settingsBtn = createButton('settings', 'Settings', ICONS.settings, openPopup, null);
 
-    controls.append(toggleBtn, createDivider(), codeBtn, createDivider(), tocBtn, settingsBtn);
+    controls.append(toggleBtn, createDivider(), codeBtn, createDivider(), tocBtn, statsBtn, createDivider(), settingsBtn);
     document.body.appendChild(controls);
 
     makeDraggable(controls);
     checkExpandCollapseState(); // Update button icon initially
 }
 
-function createButton(cls, label, icon, handler) {
+function createButton(cls, label, icon, handler, shortcutKey) {
     const btn = document.createElement('button');
     btn.className = `chat-focus-controls-btn ${cls}`;
     btn.ariaLabel = label;
-    btn.innerHTML = icon;
+
+    // 1. Create a wrapper for the icon so we can update it safely
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'cf-btn-icon';
+    iconSpan.innerHTML = icon;
+    btn.appendChild(iconSpan);
+
     btn.addEventListener('click', handler);
+
+    // 2. Create the Tooltip (Safe from innerHTML overwrites on the button itself)
+    const tooltip = document.createElement('div');
+    tooltip.className = 'cf-tooltip';
+
+    let shortcutHtml = '';
+    if (shortcutKey) {
+        const fmtKey = isMac
+            ? shortcutKey.replace('Ctrl', '⌘').replace('Shift', '⇧').replace('Space', 'Space').replace(/\+/g, ' ')
+            : shortcutKey.replace(/\+/g, '+');
+
+        shortcutHtml = `<span class="cf-tooltip-keys">${fmtKey}</span>`;
+    }
+
+    tooltip.innerHTML = `
+        <span class="cf-tooltip-label">${label}</span>
+        ${shortcutHtml}
+    `;
+
+    btn.appendChild(tooltip);
+
     return btn;
 }
 

@@ -1,4 +1,88 @@
-/* ==================== MESSAGE FOLDING ==================== */
+/* ==================== MESSAGE FOLDING (THEME AWARE) ==================== */
+
+/* --- 1. THEME VARIABLES (LIGHT DEFAULT) --- */
+:root {
+    --fold-bg: var(--cf-color-bg-primary, #ffffff);
+    --fold-border: var(--cf-color-border-base, rgba(0, 0, 0, 0.1));
+    --fold-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
+    --fold-text: var(--cf-color-text-primary, #202123);
+
+    /* User Message (Light) */
+    --fold-user-bg: linear-gradient(135deg, rgba(142, 142, 160, 0.06) 0%, rgba(142, 142, 160, 0.02) 100%);
+    --fold-user-border: rgba(142, 142, 160, 0.2);
+    --fold-user-hover: linear-gradient(135deg, rgba(142, 142, 160, 0.12) 0%, rgba(142, 142, 160, 0.04) 100%);
+    --fold-user-icon-bg: linear-gradient(135deg, rgba(142, 142, 160, 0.25) 0%, rgba(142, 142, 160, 0.15) 100%);
+    --fold-user-icon-color: #7a7a8e;
+
+    /* AI Message (Light) */
+    --fold-ai-bg: linear-gradient(135deg, rgba(16, 163, 127, 0.08) 0%, rgba(16, 163, 127, 0.02) 100%);
+    --fold-ai-border: rgba(16, 163, 127, 0.25);
+    --fold-ai-hover: linear-gradient(135deg, rgba(16, 163, 127, 0.14) 0%, rgba(16, 163, 127, 0.04) 100%);
+    --fold-ai-icon-bg: linear-gradient(135deg, rgba(16, 163, 127, 0.3) 0%, rgba(16, 163, 127, 0.2) 100%);
+    --fold-ai-icon-color: #10a37f;
+
+    /* Buttons (Light) */
+    --fold-btn-bg: rgba(255, 255, 255, 0.9);
+    --fold-btn-border: rgba(0, 0, 0, 0.1);
+    --fold-btn-text: #6e6e80;
+    --fold-btn-hover-bg: #ffffff;
+}
+
+/* --- 2. DARK MODE OVERRIDES (SYSTEM) --- */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --fold-bg: #2f2f2f;
+        --fold-border: rgba(255, 255, 255, 0.08);
+        --fold-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        --fold-text: #ececf1;
+
+        --fold-user-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+        --fold-user-border: rgba(255, 255, 255, 0.1);
+        --fold-user-hover: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+        --fold-user-icon-bg: rgba(255, 255, 255, 0.1);
+        --fold-user-icon-color: #acacbe;
+
+        --fold-ai-bg: linear-gradient(135deg, rgba(16, 163, 127, 0.15) 0%, rgba(16, 163, 127, 0.05) 100%);
+        --fold-ai-border: rgba(16, 163, 127, 0.3);
+        --fold-ai-hover: linear-gradient(135deg, rgba(16, 163, 127, 0.25) 0%, rgba(16, 163, 127, 0.1) 100%);
+        --fold-ai-icon-bg: rgba(16, 163, 127, 0.3);
+        --fold-ai-icon-color: #10a37f;
+
+        --fold-btn-bg: #2f2f2f;
+        --fold-btn-border: rgba(255, 255, 255, 0.15);
+        --fold-btn-text: #acacbe;
+        --fold-btn-hover-bg: #40414f;
+    }
+}
+
+/* --- 3. DARK MODE OVERRIDES (FORCED BY SITE) --- */
+/* This handles ChatGPT's manual dark mode switch */
+html.dark {
+    --fold-bg: #2f2f2f;
+    --fold-border: rgba(255, 255, 255, 0.08);
+    --fold-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --fold-text: #ececf1;
+
+    --fold-user-bg: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+    --fold-user-border: rgba(255, 255, 255, 0.1);
+    --fold-user-hover: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.04) 100%);
+    --fold-user-icon-bg: rgba(255, 255, 255, 0.1);
+    --fold-user-icon-color: #acacbe;
+
+    --fold-ai-bg: linear-gradient(135deg, rgba(16, 163, 127, 0.15) 0%, rgba(16, 163, 127, 0.05) 100%);
+    --fold-ai-border: rgba(16, 163, 127, 0.3);
+    --fold-ai-hover: linear-gradient(135deg, rgba(16, 163, 127, 0.25) 0%, rgba(16, 163, 127, 0.1) 100%);
+    --fold-ai-icon-bg: rgba(16, 163, 127, 0.3);
+    --fold-ai-icon-color: #10a37f;
+
+    --fold-btn-bg: #2f2f2f;
+    --fold-btn-border: rgba(255, 255, 255, 0.15);
+    --fold-btn-text: #acacbe;
+    --fold-btn-hover-bg: #40414f;
+}
+
+/* --- 4. MAIN COMPONENT STYLES --- */
+
 .chat-focus-collapsed {
     max-height: 56px !important;
     min-height: 56px !important;
@@ -7,12 +91,12 @@
     cursor: pointer;
     background: transparent !important;
     border: none !important;
-    margin: var(--cf-space-lg) 0 !important;
+    margin: var(--cf-space-lg, 16px) 0 !important;
     padding: 0 !important;
     transition:
-        max-height var(--cf-duration-slow) var(--cf-ease-in-out),
-        opacity var(--cf-duration-base) ease,
-        transform var(--cf-duration-base) var(--cf-ease-out);
+        max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.2s ease,
+        transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     opacity: 1;
     display: flex;
     justify-content: center;
@@ -35,37 +119,41 @@
     overflow: hidden !important;
 }
 
-/* --- Fold Bar Label --- */
+/* Fold Bar Label */
 .chat-focus-label {
-    font-family: var(--cf-font-system);
-    font-size: var(--cf-text-base);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 13px;
     width: 100%;
     max-width: 720px;
     margin: 0 auto;
     display: flex;
     align-items: center;
-    gap: var(--cf-space-md);
+    gap: 12px;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
     top: 50%;
     margin-top: -24px;
     height: 48px;
-    padding: var(--cf-space-md) var(--cf-space-2xl);
-    background: var(--cf-color-bg-primary);
+    padding: 12px 24px;
+
+    /* Applying Variables */
+    background: var(--fold-bg);
+    border: 1px solid var(--fold-border);
+    color: var(--fold-text);
+    box-shadow: var(--fold-shadow);
+
     backdrop-filter: blur(12px) saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
-    transition: all var(--cf-duration-base) var(--cf-ease-out);
-    border-radius: var(--cf-radius-full);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border-radius: 999px;
     outline: none;
-    border: 1px solid var(--cf-color-border-base);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02);
 }
 
 .chat-focus-label:focus-visible {
-    outline: 2px solid var(--cf-color-accent);
+    outline: 2px solid #10a37f;
     outline-offset: 3px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 0 0 4px var(--cf-color-accent-light);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 0 0 4px rgba(16, 163, 127, 0.15);
 }
 
 .chat-focus-icon {
@@ -76,7 +164,7 @@
     height: 28px;
     flex-shrink: 0;
     border-radius: 50%;
-    transition: all var(--cf-duration-base) var(--cf-ease-out);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     font-weight: 700;
     font-size: 10px;
     letter-spacing: -0.02em;
@@ -97,39 +185,35 @@
     line-height: 1.5;
     min-width: 0;
     letter-spacing: -0.011em;
-    color: var(--cf-color-text-primary);
+    color: inherit;
 }
 
 .chat-focus-turn-index {
-    font-size: var(--cf-text-xs);
+    font-size: 11px;
     font-weight: 600;
     padding: 4px 10px;
-    border-radius: var(--cf-radius-full);
+    border-radius: 99px;
     flex-shrink: 0;
     font-variant-numeric: tabular-nums;
     letter-spacing: -0.01em;
-    transition: all var(--cf-duration-fast) var(--cf-ease-out);
+    transition: all 0.15s ease;
 }
 
-/* --- User Message Styling --- */
+/* User Message Styling */
 .chat-focus-user-collapsed .chat-focus-label {
-    color: var(--cf-color-text-primary);
-    background: linear-gradient(135deg, rgba(142, 142, 160, 0.06) 0%, rgba(142, 142, 160, 0.02) 100%);
-    border: 1.5px solid rgba(142, 142, 160, 0.2);
-    box-shadow: 0 2px 8px rgba(142, 142, 160, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    background: var(--fold-user-bg);
+    border-color: var(--fold-user-border);
 }
 
 .chat-focus-user-collapsed .chat-focus-label:hover {
-    background: linear-gradient(135deg, rgba(142, 142, 160, 0.12) 0%, rgba(142, 142, 160, 0.04) 100%);
-    border-color: rgba(142, 142, 160, 0.35);
-    box-shadow: 0 4px 16px rgba(142, 142, 160, 0.18), 0 0 0 1px rgba(142, 142, 160, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    background: var(--fold-user-hover);
     transform: translateX(-50%) scale(1.02);
 }
 
 .chat-focus-user-collapsed .chat-focus-icon {
-    background: linear-gradient(135deg, rgba(142, 142, 160, 0.25) 0%, rgba(142, 142, 160, 0.15) 100%);
-    color: #7a7a8e;
-    border: 1px solid rgba(142, 142, 160, 0.2);
+    background: var(--fold-user-icon-bg);
+    color: var(--fold-user-icon-color);
+    border: 1px solid var(--fold-user-border);
 }
 
 .chat-focus-user-collapsed .chat-focus-icon::before {
@@ -137,36 +221,27 @@
 }
 
 .chat-focus-user-collapsed .chat-focus-turn-index {
-    background: rgba(142, 142, 160, 0.1);
-    color: #6b6b7a;
-    border: 1px solid rgba(142, 142, 160, 0.15);
+    background: var(--fold-user-icon-bg);
+    color: var(--fold-user-icon-color);
+    border: 1px solid var(--fold-user-border);
+    opacity: 0.8;
 }
 
-.chat-focus-user-collapsed:hover .chat-focus-turn-index {
-    background: rgba(142, 142, 160, 0.15);
-    color: #5a5a68;
-    border-color: rgba(142, 142, 160, 0.25);
-}
-
-/* --- AI Message Styling --- */
+/* AI Message Styling */
 .chat-focus-ai-collapsed .chat-focus-label {
-    color: var(--cf-color-text-primary);
-    background: linear-gradient(135deg, rgba(16, 163, 127, 0.08) 0%, rgba(16, 163, 127, 0.02) 100%);
-    border: 1.5px solid rgba(16, 163, 127, 0.25);
-    box-shadow: 0 2px 8px rgba(16, 163, 127, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    background: var(--fold-ai-bg);
+    border-color: var(--fold-ai-border);
 }
 
 .chat-focus-ai-collapsed .chat-focus-label:hover {
-    background: linear-gradient(135deg, rgba(16, 163, 127, 0.14) 0%, rgba(16, 163, 127, 0.04) 100%);
-    border-color: rgba(16, 163, 127, 0.45);
-    box-shadow: 0 4px 20px rgba(16, 163, 127, 0.25), 0 0 0 1px rgba(16, 163, 127, 0.15), 0 0 24px rgba(16, 163, 127, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    background: var(--fold-ai-hover);
     transform: translateX(-50%) scale(1.02);
 }
 
 .chat-focus-ai-collapsed .chat-focus-icon {
-    background: linear-gradient(135deg, rgba(16, 163, 127, 0.3) 0%, rgba(16, 163, 127, 0.2) 100%);
-    color: var(--cf-color-accent);
-    border: 1px solid rgba(16, 163, 127, 0.25);
+    background: var(--fold-ai-icon-bg);
+    color: var(--fold-ai-icon-color);
+    border: 1px solid var(--fold-ai-border);
 }
 
 .chat-focus-ai-collapsed .chat-focus-icon::before {
@@ -174,52 +249,37 @@
 }
 
 .chat-focus-ai-collapsed .chat-focus-turn-index {
-    background: rgba(16, 163, 127, 0.12);
-    color: var(--cf-color-accent-hover);
-    border: 1px solid rgba(16, 163, 127, 0.2);
+    background: var(--fold-ai-icon-bg);
+    color: var(--fold-ai-icon-color);
+    border: 1px solid var(--fold-ai-border);
+    opacity: 0.9;
 }
 
-.chat-focus-ai-collapsed:hover .chat-focus-turn-index {
-    background: rgba(16, 163, 127, 0.2);
-    color: var(--cf-color-accent);
-    border-color: rgba(16, 163, 127, 0.35);
-    box-shadow: 0 0 8px rgba(16, 163, 127, 0.2);
-}
-
-/* --- Refold Button --- */
+/* Refold Button */
 .chat-focus-refold-btn {
     position: absolute;
-    top: var(--cf-space-md);
-    right: var(--cf-space-md);
-    background: rgba(255, 255, 255, 0.9);
-    border: 1.5px solid rgba(0, 0, 0, 0.1);
-    color: var(--cf-color-text-secondary);
-    font-size: var(--cf-text-xs);
-    font-family: var(--cf-font-system);
+    top: 12px;
+    left: 12px;
+    background: var(--fold-btn-bg);
+    border: 1.5px solid var(--fold-btn-border);
+    color: var(--fold-btn-text);
+    font-size: 11px;
+    font-family: inherit;
     font-weight: 550;
     padding: 6px 12px;
-    border-radius: var(--cf-radius-full);
+    border-radius: 99px;
     cursor: pointer;
     z-index: 100;
     opacity: 0;
-    transition: all var(--cf-duration-base) var(--cf-ease-out);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     outline: none;
     display: flex;
     align-items: center;
     gap: 6px;
     pointer-events: none;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    letter-spacing: -0.01em;
-}
-
-@media (prefers-color-scheme: dark) {
-    .chat-focus-refold-btn {
-        background: rgba(52, 53, 65, 0.9);
-        border-color: rgba(255, 255, 255, 0.15);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-    }
 }
 
 .chat-focus-refold-btn::before {
@@ -231,7 +291,7 @@
     background-size: contain;
     background-repeat: no-repeat;
     opacity: 0.7;
-    transition: all var(--cf-duration-fast) var(--cf-ease-out);
+    transition: all 0.15s ease;
 }
 
 .chat-focus-processed:not(.chat-focus-collapsed):hover .chat-focus-refold-btn {
@@ -240,18 +300,11 @@
 }
 
 .chat-focus-refold-btn:hover {
-    background: rgba(255, 255, 255, 1);
-    color: var(--cf-color-text-primary);
-    border-color: rgba(0, 0, 0, 0.15);
+    background: var(--fold-btn-hover-bg);
+    color: var(--fold-text);
+    border-color: rgba(0, 0, 0, 0.2);
     transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-@media (prefers-color-scheme: dark) {
-    .chat-focus-refold-btn:hover {
-        background: rgba(68, 70, 84, 0.95);
-        border-color: rgba(255, 255, 255, 0.25);
-    }
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 .chat-focus-refold-btn:hover::before {
@@ -259,7 +312,78 @@
     transform: scale(1.1);
 }
 
-.chat-focus-refold-btn:focus-visible {
-    outline: 2px solid var(--cf-color-accent);
-    outline-offset: 3px;
+/* Pin Button */
+.chat-focus-pin-btn {
+    position: absolute;
+    top: 12px;
+    left: 80px;
+    background: var(--fold-btn-bg);
+    border: 1.5px solid var(--fold-btn-border);
+    color: var(--fold-btn-text);
+    font-size: 11px;
+    font-family: inherit;
+    font-weight: 550;
+    padding: 6px 10px;
+    border-radius: 99px;
+    cursor: pointer;
+    z-index: 100;
+    opacity: 0;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    outline: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(8px);
+}
+
+.chat-focus-pin-btn svg {
+    width: 14px;
+    height: 14px;
+    opacity: 0.7;
+    transition: all 0.15s ease;
+}
+
+.chat-focus-processed:not(.chat-focus-collapsed):hover .chat-focus-pin-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.chat-focus-pin-btn:hover {
+    background: var(--fold-btn-hover-bg);
+    color: #10a37f;
+    border-color: rgba(16, 163, 127, 0.3);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 16px rgba(16, 163, 127, 0.15);
+}
+
+.chat-focus-pin-btn:hover svg {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Pinned state */
+.chat-focus-pin-btn.pinned {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    background: linear-gradient(135deg, rgba(16, 163, 127, 0.15) 0%, rgba(16, 163, 127, 0.08) 100%);
+    border-color: rgba(16, 163, 127, 0.3);
+    color: #10a37f;
+}
+
+.chat-focus-pin-btn.pinned svg {
+    opacity: 1;
+}
+
+.chat-focus-pin-btn.pinned:hover {
+    background: linear-gradient(135deg, rgba(16, 163, 127, 0.25) 0%, rgba(16, 163, 127, 0.12) 100%);
+    border-color: rgba(16, 163, 127, 0.45);
+}
+
+/* Pinned message indicator */
+.chat-focus-pinned {
+    border-left: 3px solid #10a37f !important;
+    box-shadow: 0 0 0 1px rgba(16, 163, 127, 0.1) !important;
 }
