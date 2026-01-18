@@ -1,45 +1,47 @@
 {
     "manifest_version": 3,
-    "name": "ChatFocus - Auto-Collapse AI Chats",
+    "name": "ChatFocus - Auto-Collapse & Organize AI Chats",
+    "short_name": "ChatFocus",
     "version": "2.1.0",
-    "description": "Automatically collapses past AI responses to make scrolling easier.",
+    "description": "Boost productivity on ChatGPT, Claude & Gemini. Auto-collapse long responses, generate a table of contents, and focus on code.",
     "author": "ChatFocus Team",
+    "minimum_chrome_version": "88",
+    "offline_enabled": true,
+    "incognito": "spanning",
     "icons": {
         "16": "assets/icons/icon16.png",
         "48": "assets/icons/icon48.png",
         "128": "assets/icons/icon128.png"
     },
-    "web_accessible_resources": [
-        {
-            "resources": [
-                "assets/icons/*",
-                "content/*.js",
-                "content/core/*.js",
-                "content/features/**/*.js",
-                "content/storage/*.js",
-                "content/sites/**/*.js"
-            ],
-            "matches": [
-                "https://chatgpt.com/*",
-                "https://claude.ai/*",
-                "https://chat.openai.com/*"
-            ]
+    "action": {
+        "default_popup": "popup/popup.html",
+        "default_title": "ChatFocus Settings",
+        "default_icon": {
+            "16": "assets/icons/icon16.png",
+            "48": "assets/icons/icon48.png",
+            "128": "assets/icons/icon128.png"
         }
-    ],
+    },
+    "options_page": "options/options.html",
+    "background": {
+        "service_worker": "background.js"
+    },
     "permissions": [
         "storage"
     ],
     "host_permissions": [
         "https://chatgpt.com/*",
         "https://claude.ai/*",
-        "https://chat.openai.com/*"
+        "https://chat.openai.com/*",
+        "https://gemini.google.com/*"
     ],
     "content_scripts": [
         {
             "matches": [
                 "https://chatgpt.com/*",
                 "https://claude.ai/*",
-                "https://chat.openai.com/*"
+                "https://chat.openai.com/*",
+                "https://gemini.google.com/*"
             ],
             "js": [
                 "content/loader.js"
@@ -55,16 +57,22 @@
             "run_at": "document_idle"
         }
     ],
-    "options_page": "options/options.html",
-    "action": {
-        "default_popup": "popup/popup.html",
-        "default_icon": {
-            "16": "assets/icons/icon16.png",
-            "48": "assets/icons/icon48.png",
-            "128": "assets/icons/icon128.png"
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "assets/icons/*",
+                "content/*.js",
+                "content/core/*.js",
+                "content/features/**/*.js",
+                "content/storage/*.js",
+                "content/sites/**/*.js"
+            ],
+            "matches": [
+                "https://chatgpt.com/*",
+                "https://claude.ai/*",
+                "https://chat.openai.com/*",
+                "https://gemini.google.com/*"
+            ]
         }
-    },
-    "background": {
-        "service_worker": "background.js"
-    }
+    ]
 }
