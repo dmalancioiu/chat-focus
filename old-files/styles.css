@@ -137,7 +137,7 @@
 }
 
 /* Hide content when collapsed */
-.chat-focus-collapsed > *:not(.chat-focus-label) {
+.chat-focus-collapsed>*:not(.chat-focus-label) {
   opacity: 0 !important;
   pointer-events: none !important;
   max-height: 0 !important;
@@ -420,7 +420,7 @@
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
   transition: transform var(--cf-duration-slow) var(--cf-ease-out),
-              opacity var(--cf-duration-slow) ease;
+    opacity var(--cf-duration-slow) ease;
   font-family: var(--cf-font-system);
   display: flex;
   flex-direction: column;
@@ -495,9 +495,12 @@
 }
 
 @keyframes badge-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 1px 3px rgba(16, 163, 127, 0.15);
   }
+
   50% {
     box-shadow: 0 1px 3px rgba(16, 163, 127, 0.25), 0 0 8px rgba(16, 163, 127, 0.2);
   }
@@ -653,6 +656,7 @@
     opacity: 0;
     transform: translateY(-4px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -677,13 +681,11 @@
   top: var(--cf-space-lg);
   bottom: var(--cf-space-lg);
   width: 2px;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    var(--cf-color-border-base) 5%,
-    var(--cf-color-border-base) 95%,
-    transparent 100%
-  );
+  background: linear-gradient(180deg,
+      transparent 0%,
+      var(--cf-color-border-base) 5%,
+      var(--cf-color-border-base) 95%,
+      transparent 100%);
   border-radius: 2px;
 }
 
@@ -819,14 +821,14 @@ body.chat-focus-code-mode .chat-focus-toc-item .chat-focus-toc-item-label {
 }
 
 /* User question label in code mode */
-body.chat-focus-code-mode .chat-focus-toc-item-type.user ~ .chat-focus-toc-item-content .chat-focus-toc-item-label {
+body.chat-focus-code-mode .chat-focus-toc-item-type.user~.chat-focus-toc-item-content .chat-focus-toc-item-label {
   background: rgba(142, 142, 160, 0.12);
   color: var(--cf-color-user);
   border-color: rgba(142, 142, 160, 0.2);
 }
 
 /* AI code label in code mode */
-body.chat-focus-code-mode .chat-focus-toc-item-type.ai ~ .chat-focus-toc-item-content .chat-focus-toc-item-label {
+body.chat-focus-code-mode .chat-focus-toc-item-type.ai~.chat-focus-toc-item-content .chat-focus-toc-item-label {
   background: rgba(16, 163, 127, 0.12);
   color: var(--cf-color-accent);
   border-color: rgba(16, 163, 127, 0.2);
@@ -934,10 +936,13 @@ body.chat-focus-code-mode .chat-focus-toc-item-type.ai ~ .chat-focus-toc-item-co
 }
 
 @keyframes deep-match-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 0.35;
     transform: translateY(-50%) scale(1);
   }
+
   50% {
     opacity: 0.65;
     transform: translateY(-50%) scale(1.08);
@@ -1221,9 +1226,11 @@ body.chat-focus-code-mode .chat-focus-toc-empty::before {
     transform: translateX(-50%) translateY(-20px) scale(0.95);
     opacity: 0;
   }
+
   50% {
     transform: translateX(-50%) translateY(2px) scale(1.02);
   }
+
   100% {
     transform: translateX(-50%) translateY(0) scale(1);
     opacity: 1;
@@ -1235,17 +1242,17 @@ body.chat-focus-code-mode .chat-focus-toc-empty::before {
    ========================================================================== */
 
 /* Hide all non-code content in AI messages only */
-body.chat-focus-code-mode .chat-focus-ai-collapsed .markdown > *:not(pre):not(div[class*="code"]):not([class*="codeblock"]) {
+body.chat-focus-code-mode .chat-focus-ai-collapsed .markdown>*:not(pre):not(div[class*="code"]):not([class*="codeblock"]) {
   display: none !important;
 }
 
-body.chat-focus-code-mode .chat-focus-ai-collapsed [class*="markdown"] > *:not(pre):not(div[class*="code"]):not([class*="codeblock"]) {
+body.chat-focus-code-mode .chat-focus-ai-collapsed [class*="markdown"]>*:not(pre):not(div[class*="code"]):not([class*="codeblock"]) {
   display: none !important;
 }
 
 /* Keep all content visible in user messages */
-body.chat-focus-code-mode .chat-focus-user-collapsed .markdown > *,
-body.chat-focus-code-mode .chat-focus-user-collapsed [class*="markdown"] > * {
+body.chat-focus-code-mode .chat-focus-user-collapsed .markdown>*,
+body.chat-focus-code-mode .chat-focus-user-collapsed [class*="markdown"]>* {
   display: block !important;
 }
 
@@ -1402,6 +1409,7 @@ body.chat-focus-code-mode .chat-focus-controls-btn.code-mode {
    ========================================================================== */
 
 @media (prefers-color-scheme: dark) {
+
   /* User messages in dark mode */
   .chat-focus-user-collapsed .chat-focus-label {
     background: linear-gradient(135deg, rgba(142, 142, 160, 0.14) 0%, rgba(142, 142, 160, 0.06) 100%);
@@ -1495,6 +1503,7 @@ body.chat-focus-code-mode .chat-focus-controls-btn.code-mode {
 
 /* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -1550,9 +1559,11 @@ body.chat-focus-code-mode .chat-focus-controls-btn.code-mode {
       0 0 16px rgba(255, 215, 0, 0.2);
     transform: scale(1.05);
   }
+
   50% {
     transform: scale(1);
   }
+
   100% {
     background: linear-gradient(135deg, rgba(255, 200, 0, 0.45) 0%, rgba(255, 215, 0, 0.35) 100%);
   }

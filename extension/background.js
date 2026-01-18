@@ -9,7 +9,7 @@ chrome.runtime.onInstalled.addListener((details) => {
             keepOpen: 1,
             previewLength: 85
         });
-        
+
         // Open options page on first install
         chrome.runtime.openOptionsPage();
     } else if (details.reason === 'update') {

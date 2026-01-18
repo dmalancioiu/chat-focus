@@ -1,0 +1,242 @@
+/* popup.css */
+
+body {
+    width: 320px;
+    margin: 0;
+    padding: 12px;
+    background: var(--cf-color-bg-secondary);
+}
+
+.cfp-shell {
+    border-radius: 16px;
+    border: 1px solid var(--cf-color-border-light);
+    background: var(--cf-color-bg-primary);
+    box-shadow: var(--cf-shadow-md);
+    overflow: hidden;
+}
+
+.cfp-header {
+    padding: 14px 14px 12px;
+    border-bottom: 1px solid var(--cf-color-border-light);
+}
+
+.cfp-app {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.cfp-appIcon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    box-shadow: 0 1px 0 var(--cf-color-border-light), 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.cfp-appText {
+    flex: 1;
+    min-width: 0;
+}
+
+.cfp-titleRow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cfp-title {
+    font-size: 14px;
+    font-weight: 650;
+    letter-spacing: -0.01em;
+    color: var(--cf-color-text-primary);
+}
+
+.cfp-subtitle {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--cf-color-text-secondary);
+}
+
+.cfp-statusPill {
+    margin-left: auto;
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: var(--cf-radius-full);
+    border: 1px solid var(--cf-color-border-light);
+    background: var(--cf-color-bg-secondary);
+    color: var(--cf-color-text-secondary);
+    white-space: nowrap;
+}
+
+.cfp-statusPill.is-active {
+    background: var(--cf-color-accent-light);
+    border-color: rgba(16, 163, 127, 0.22);
+    color: var(--cf-color-text-primary);
+}
+
+.cfp-main {
+    padding: 12px;
+}
+
+.cfp-groupTitle {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--cf-color-text-tertiary);
+    margin: 2px 6px 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.cfp-list {
+    border: 1px solid var(--cf-color-border-light);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--cf-color-bg-primary);
+}
+
+.cfp-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cfp-row+.cfp-row {
+    border-top: 1px solid var(--cf-color-border-light);
+}
+
+.cfp-row:hover {
+    background: var(--cf-color-bg-overlay);
+}
+
+.cfp-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.cfp-logo {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    border: 1px solid var(--cf-color-border-light);
+    background: var(--cf-color-bg-secondary);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    flex: 0 0 auto;
+}
+
+.cfp-logo img {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+}
+
+.cfp-logoFallback {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--cf-color-text-secondary);
+}
+
+.cfp-rowText {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0;
+}
+
+.cfp-rowTitle {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--cf-color-text-primary);
+}
+
+.cfp-rowMeta {
+    font-size: 11px;
+    color: var(--cf-color-text-tertiary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cfp-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 auto;
+}
+
+.cfp-activeDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--cf-color-accent);
+    opacity: 0;
+    transition: opacity var(--cf-duration-fast) var(--cf-ease-out);
+}
+
+.cfp-activeDot.show {
+    opacity: 1;
+}
+
+.cfp-toggle {
+    transform: scale(0.92);
+    transform-origin: right center;
+}
+
+.cfp-actions {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.cfp-actionBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--cf-color-border-light);
+    background: var(--cf-color-bg-secondary);
+    color: var(--cf-color-text-primary);
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform var(--cf-duration-fast) var(--cf-ease-out),
+        background var(--cf-duration-fast) var(--cf-ease-out);
+}
+
+.cfp-actionBtn:hover {
+    background: var(--cf-color-bg-tertiary);
+    transform: translateY(-1px);
+}
+
+.cfp-actionBtn:active {
+    transform: translateY(0);
+}
+
+.cfp-actionBtn:focus-visible {
+    outline: 2px solid var(--cf-color-accent);
+    outline-offset: 2px;
+}
+
+.cfp-actionIcon {
+    width: 16px;
+    height: 16px;
+    display: grid;
+    place-items: center;
+    color: var(--cf-color-text-secondary);
+}
+
+.cfp-actionIcon svg {
+    width: 16px;
+    height: 16px;
+}

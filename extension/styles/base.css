@@ -1,0 +1,130 @@
+/* ============================================================================
+   CHATFOCUS - DESIGN SYSTEM
+   Modern, accessible UI augmentation for ChatGPT
+   ========================================================================== */
+
+:root {
+    /* --- Spacing Scale --- */
+    --cf-space-xs: 4px;
+    --cf-space-sm: 8px;
+    --cf-space-md: 12px;
+    --cf-space-lg: 16px;
+    --cf-space-xl: 20px;
+    --cf-space-2xl: 24px;
+    --cf-space-3xl: 32px;
+
+    /* --- Border Radius --- */
+    --cf-radius-sm: 4px;
+    --cf-radius-md: 6px;
+    --cf-radius-lg: 8px;
+    --cf-radius-xl: 12px;
+    --cf-radius-full: 9999px;
+
+    /* --- Shadows (Premium) --- */
+    --cf-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --cf-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.06);
+    --cf-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.08);
+    --cf-shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.18), 0 8px 16px rgba(0, 0, 0, 0.12);
+
+    /* --- Typography --- */
+    --cf-font-system: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    --cf-font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Consolas', monospace;
+    --cf-text-xs: 11px;
+    --cf-text-sm: 12px;
+    --cf-text-base: 13px;
+    --cf-text-md: 14px;
+    --cf-text-lg: 16px;
+
+    /* --- Animation Timing --- */
+    --cf-duration-fast: 150ms;
+    --cf-duration-base: 200ms;
+    --cf-duration-slow: 300ms;
+    --cf-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --cf-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* --- Z-Index Scale --- */
+    --cf-z-base: 1000;
+    --cf-z-toc: 9998;
+    --cf-z-controls: 9999;
+    --cf-z-notification: 10000;
+
+    /* --- Light Theme Colors --- */
+    --cf-color-bg-primary: rgba(255, 255, 255, 0.95);
+    --cf-color-bg-secondary: rgba(247, 247, 248, 0.95);
+    --cf-color-bg-tertiary: rgba(255, 255, 255, 0.6);
+    --cf-color-bg-overlay: rgba(0, 0, 0, 0.02);
+
+    --cf-color-text-primary: #202123;
+    --cf-color-text-secondary: #565869;
+    --cf-color-text-tertiary: #8e8ea0;
+    --cf-color-text-inverse: #ffffff;
+
+    --cf-color-border-light: rgba(0, 0, 0, 0.05);
+    --cf-color-border-base: rgba(0, 0, 0, 0.1);
+    --cf-color-border-strong: rgba(0, 0, 0, 0.15);
+
+    --cf-color-accent: #10a37f;
+    --cf-color-accent-hover: #0d8c6e;
+    --cf-color-accent-light: rgba(16, 163, 127, 0.08);
+    --cf-color-accent-medium: rgba(16, 163, 127, 0.15);
+
+    --cf-color-user: #8e8ea0;
+    --cf-color-user-light: rgba(142, 142, 160, 0.1);
+
+    --cf-blur: blur(12px) saturate(180%);
+}
+
+/* --- Dark Mode Variables --- */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --cf-color-bg-primary: rgba(52, 53, 65, 0.95);
+        --cf-color-bg-secondary: rgba(68, 70, 84, 0.95);
+        --cf-color-bg-tertiary: rgba(52, 53, 65, 0.6);
+        --cf-color-bg-overlay: rgba(255, 255, 255, 0.05);
+
+        --cf-color-text-primary: #ececf1;
+        --cf-color-text-secondary: #c5c5d2;
+        --cf-color-text-tertiary: #8e8ea0;
+        --cf-color-text-inverse: #202123;
+
+        --cf-color-border-light: rgba(255, 255, 255, 0.05);
+        --cf-color-border-base: rgba(255, 255, 255, 0.1);
+        --cf-color-border-strong: rgba(255, 255, 255, 0.15);
+
+        --cf-color-accent-light: rgba(16, 163, 127, 0.15);
+        --cf-color-accent-medium: rgba(16, 163, 127, 0.25);
+
+        --cf-color-user-light: rgba(142, 142, 160, 0.15);
+    }
+}
+
+/* --- Accessibility --- */
+@media (prefers-contrast: high) {
+    :root {
+        --cf-color-border-base: rgba(0, 0, 0, 0.3);
+        --cf-color-border-strong: rgba(0, 0, 0, 0.5);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+.chat-focus-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}

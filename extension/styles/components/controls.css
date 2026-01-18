@@ -1,0 +1,219 @@
+/* ==================== FLOATING CONTROLS (THEME AWARE) ==================== */
+
+/* 1. Define Variables for Light Mode */
+:root {
+    --cf-bg: #ffffff;
+    --cf-border: rgba(0, 0, 0, 0.08);
+    --cf-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    --cf-text-icon: #6e6e80;
+    --cf-text-hover: #202123;
+    --cf-hover-bg: rgba(0, 0, 0, 0.04);
+    --cf-divider: rgba(0, 0, 0, 0.08);
+    --cf-accent: #10a37f;
+}
+
+/* 2. Define Variables for Dark Mode (System Preference) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --cf-bg: #2f2f2f;
+        --cf-border: rgba(255, 255, 255, 0.05);
+        --cf-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        --cf-text-icon: #b4b4b4;
+        --cf-text-hover: #ffffff;
+        --cf-hover-bg: rgba(255, 255, 255, 0.08);
+        --cf-divider: rgba(255, 255, 255, 0.1);
+        --cf-accent: #19c37d;
+    }
+}
+
+/* 3. Define Variables for Dark Mode (Manual Class Override) */
+html.dark {
+    --cf-bg: #2f2f2f;
+    --cf-border: rgba(255, 255, 255, 0.05);
+    --cf-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    --cf-text-icon: #b4b4b4;
+    --cf-text-hover: #ffffff;
+    --cf-hover-bg: rgba(255, 255, 255, 0.08);
+    --cf-divider: rgba(255, 255, 255, 0.1);
+    --cf-accent: #19c37d;
+}
+
+/* 4. Main Styles */
+.chat-focus-controls {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 6px 8px;
+
+    background: var(--cf-bg);
+    border: 1px solid var(--cf-border);
+    border-radius: 999px;
+    box-shadow: var(--cf-shadow);
+
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    cursor: move;
+}
+
+.chat-focus-controls.dragging {
+    cursor: grabbing;
+    transform: scale(1.02);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.chat-focus-controls.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
+}
+
+/* Buttons */
+.chat-focus-controls-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    color: var(--cf-text-icon);
+    transition: all 0.15s ease;
+    position: relative;
+    outline: none;
+}
+
+.chat-focus-controls-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
+    stroke: currentColor;
+    fill: none;
+}
+
+.chat-focus-controls-btn:hover {
+    background: var(--cf-hover-bg);
+    color: var(--cf-text-hover);
+}
+
+.chat-focus-controls-btn:active {
+    transform: scale(0.96);
+}
+
+/* Divider */
+.chat-focus-controls-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--cf-divider);
+    margin: 0 2px;
+}
+
+/* --- TOOLTIPS --- */
+.cf-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    margin-bottom: 12px;
+
+    background: #000000;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+
+    font-size: 12px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1;
+    white-space: nowrap;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+}
+
+.chat-focus-controls-btn:hover .cf-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.cf-tooltip-label {
+    font-weight: 500;
+    color: #ffffff;
+}
+
+.cf-tooltip-keys {
+    font-family: monospace;
+    font-size: 11px;
+    color: #a1a1aa;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* --- NOTIFICATIONS --- */
+.chat-focus-notification {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+
+    background: linear-gradient(135deg, #10a37f 0%, #0d8c6e 100%);
+    color: #ffffff;
+
+    padding: 10px 20px;
+    border-radius: 99px;
+    box-shadow: 0 8px 24px rgba(16, 163, 127, 0.35);
+
+    z-index: 10000;
+
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chat-focus-notification.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    animation: notification-bounce 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes notification-bounce {
+    0% {
+        transform: translateX(-50%) translateY(-20px) scale(0.95);
+        opacity: 0;
+    }
+
+    60% {
+        transform: translateX(-50%) translateY(2px) scale(1.02);
+    }
+
+    100% {
+        transform: translateX(-50%) translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Cleanup */
+.chat-focus-controls-btn::after,
+.chat-focus-controls-btn::before {
+    content: none !important;
+    display: none !important;
+}

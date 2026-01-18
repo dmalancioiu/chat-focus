@@ -1,0 +1,146 @@
+/* ==================== SESSION STATS (THEME AWARE) ==================== */
+
+/* 1. Define Variables for Light Mode */
+.chat-focus-stats {
+    --stat-bg: #ffffff;
+    --stat-border: rgba(0, 0, 0, 0.08);
+    --stat-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+    --stat-text-primary: #202123;
+    --stat-text-secondary: #6e6e80;
+    --stat-divider: rgba(0, 0, 0, 0.06);
+    --stat-accent: #10a37f;
+    /* ChatFocus Green */
+}
+
+/* 2. Define Variables for Dark Mode (Matches ChatGPT Input) */
+@media (prefers-color-scheme: dark) {
+    .chat-focus-stats {
+        /* Matches controls.css / ChatGPT Input */
+        --stat-bg: #2f2f2f;
+        --stat-border: rgba(255, 255, 255, 0.05);
+        --stat-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        --stat-text-primary: #ffffff;
+        --stat-text-secondary: #b4b4b4;
+        --stat-divider: rgba(255, 255, 255, 0.1);
+        --stat-accent: #19c37d;
+        /* Lighter green for dark mode */
+    }
+}
+
+/* Force Dark Mode class (if triggered by theme-observer.js) */
+.chat-focus-controls.cf-dark+.chat-focus-stats,
+/* If siblings */
+.chat-focus-stats.cf-dark {
+    --stat-bg: #2f2f2f;
+    --stat-border: rgba(255, 255, 255, 0.05);
+    --stat-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --stat-text-primary: #ffffff;
+    --stat-text-secondary: #b4b4b4;
+    --stat-divider: rgba(255, 255, 255, 0.1);
+    --stat-accent: #19c37d;
+}
+
+/* 3. Main Container */
+.chat-focus-stats {
+    position: fixed;
+    /* Bottom/Left are set dynamically by JS */
+    width: 220px;
+
+    background: var(--stat-bg);
+    border: 1px solid var(--stat-border);
+    border-radius: 12px;
+    /* Slightly larger radius for the card */
+    box-shadow: var(--stat-shadow);
+
+    z-index: var(--cf-z-controls);
+    overflow: hidden;
+
+    /* Clean, solid look (removed blur to match input field style) */
+    font-family: var(--cf-font-system);
+
+    /* Animation */
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(10px) scale(0.95);
+    transform-origin: bottom center;
+    transition:
+        opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Show state (toggled by JS) */
+.chat-focus-stats:not(.hidden) {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+
+/* Header */
+.chat-focus-stats-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--stat-divider);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-focus-stats-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--stat-text-secondary);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.chat-focus-stats-close {
+    background: transparent;
+    border: none;
+    color: var(--stat-text-secondary);
+    cursor: pointer;
+    padding: 4px;
+    margin: -4px;
+    border-radius: 4px;
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
+}
+
+.chat-focus-stats-close:hover {
+    color: var(--stat-text-primary);
+    background: var(--stat-divider);
+}
+
+/* Content */
+.chat-focus-stats-content {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.chat-focus-stats-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+}
+
+.chat-focus-stats-label {
+    color: var(--stat-text-secondary);
+    font-weight: 500;
+}
+
+.chat-focus-stats-value {
+    font-weight: 600;
+    color: var(--stat-text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+/* Optional: Highlight the "Tokens" value with color */
+#stats-tokens {
+    color: var(--stat-accent);
+}

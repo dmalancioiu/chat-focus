@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatFocus Settings</title>
+  <style>
+    /* ... (Previous CSS remains exactly the same) ... */
+    :root {
+      --bg: #ffffff;
+      --text: #09090b;
+      --text-sub: #71717a;
+      --border: #e4e4e7;
+      --hover: #f4f4f5;
+      --accent: #18181b;
+      --radius: 8px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #09090b;
+        --text: #fafafa;
+        --text-sub: #a1a1aa;
+        --border: #27272a;
+        --hover: #18181b;
+        --accent: #fafafa;
+      }
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 60px 20px 100px;
+    }
+
+    /* --- Header --- */
+    .header {
+      margin-bottom: 48px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background-image: url('../assets/icons/icon128.png');
+      background-size: cover;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-info h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+
+    .header-info p {
+      margin: 4px 0 0;
+      color: var(--text-sub);
+      font-size: 14px;
+    }
+
+    /* --- Sections --- */
+    .section {
+      margin-bottom: 48px;
+    }
+
+    .section-header {
+      margin-bottom: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-sub);
+      margin: 0;
+    }
+
+    /* --- Rows --- */
+    .setting-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 16px 0;
+      gap: 24px;
+    }
+
+    .setting-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .setting-desc {
+      font-size: 13px;
+      color: var(--text-sub);
+      line-height: 1.4;
+      max-width: 400px;
+    }
+
+    /* --- Controls --- */
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--border);
+      transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    input:checked+.slider {
+      background-color: var(--text);
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(20px);
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .modern-input {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 8px 12px;
+      font-family: inherit;
+      font-size: 14px;
+      width: 80px;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+
+    .modern-input:focus {
+      outline: none;
+      border-color: var(--text);
+    }
+
+    .range-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 140px;
+      background: transparent;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: var(--text);
+      cursor: pointer;
+      margin-top: -6px;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 4px;
+      cursor: pointer;
+      background: var(--border);
+      border-radius: 2px;
+    }
+
+    /* --- Shortcut Grid --- */
+    .shortcut-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .shortcut-item {
+      background: var(--hover);
+      padding: 16px;
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 1px solid transparent;
+    }
+
+    .shortcut-label {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .kbd {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-family: monospace;
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .kbd-key {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 8px;
+      /* Slightly wider for words */
+      min-width: 20px;
+      text-align: center;
+      box-shadow: 0 1px 0 var(--border);
+      font-weight: 500;
+    }
+
+    /* --- Actions --- */
+    .actions {
+      margin-top: 60px;
+      display: flex;
+      gap: 12px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 10px 20px;
+      border-radius: 6px;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-sub);
+    }
+
+    .btn-ghost:hover {
+      color: var(--text);
+      background: var(--hover);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--text);
+      color: var(--bg);
+      padding: 8px 16px;
+      border-radius: 99px;
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .toast.visible {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <div class="header">
+      <div class="header-icon"></div>
+      <div class="header-info">
+        <h1>Settings</h1>
+        <p>Manage default behaviors for ChatFocus.</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">General</h2>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <label class="setting-label" for="enabled">Enable Extension</label>
+          <div class="setting-desc">Master switch. Turn off to disable all features without uninstalling.</div>
+        </div>
+        <div class="toggle">
+          <input type="checkbox" id="enabled">
+          <span class="slider"></span>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <label class="setting-label" for="keepOpen">Messages to Keep Open</label>
+          <div class="setting-desc">How many recent messages stay expanded automatically.</div>
+        </div>
+        <div class="range-wrapper">
+          <span id="keepOpenValue" style="font-weight:600; width:12px;">1</span>
+          <input type="range" id="keepOpen" min="1" max="5" step="1">
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div>
+          <label class="setting-label" for="previewLength">Preview Length</label>
+          <div class="setting-desc">Character limit for collapsed message previews.</div>
+        </div>
+        <div class="input-group">
+          <input type="number" id="previewLength" class="modern-input" min="30" max="300">
+          <span style="font-size:13px; color:var(--text-sub)">chars</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">Keyboard Shortcuts</h2>
+      </div>
+
+      <div class="shortcut-grid">
+        <div class="shortcut-item">
+          <span class="shortcut-label">Expand / Collapse All</span>
+          <div class="kbd">
+            <span class="kbd-key key-mod">Ctrl</span>
+            <span class="kbd-key key-shift">Shift</span>
+            <span class="kbd-key">Space</span>
+          </div>
+        </div>
+
+        <div class="shortcut-item">
+          <span class="shortcut-label">Chat Only Mode</span>
+          <div class="kbd">
+            <span class="kbd-key key-mod">Ctrl</span>
+            <span class="kbd-key key-shift">Shift</span>
+            <span class="kbd-key">C</span>
+          </div>
+        </div>
+
+        <div class="shortcut-item">
+          <span class="shortcut-label">Table of Contents</span>
+          <div class="kbd">
+            <span class="kbd-key key-mod">Ctrl</span>
+            <span class="kbd-key key-shift">Shift</span>
+            <span class="kbd-key">O</span>
+          </div>
+        </div>
+
+        <div class="shortcut-item">
+          <span class="shortcut-label">Session Stats</span>
+          <div class="kbd">
+            <span class="kbd-key key-mod">Ctrl</span>
+            <span class="kbd-key key-shift">Shift</span>
+            <span class="kbd-key">S</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="saveButton">Save Changes</button>
+      <button class="btn btn-ghost" id="resetButton">Reset Defaults</button>
+    </div>
+
+  </div>
+
+  <div id="statusMessage" class="toast">Settings Saved</div>
+
+  <script src="options.js"></script>
+</body>
+
+</html>

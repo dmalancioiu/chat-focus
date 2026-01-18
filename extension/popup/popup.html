@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChatFocus</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --text: #09090b;
+      --text-sub: #71717a;
+      --border: #e4e4e7;
+      --hover: #f4f4f5;
+      --accent: #18181b;
+      /* distinct black accent */
+      --success: #10b981;
+      --radius: 12px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #09090b;
+        --text: #fafafa;
+        --text-sub: #a1a1aa;
+        --border: #27272a;
+        --hover: #18181b;
+        --accent: #fafafa;
+      }
+    }
+
+    body {
+      width: 320px;
+      margin: 0;
+      padding: 0;
+      /* Full bleed */
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* --- Header --- */
+    .header {
+      padding: 20px 20px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid transparent;
+      /* invisible border for spacing */
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+    }
+
+    .brand-info h1 {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0;
+      line-height: 1.2;
+    }
+
+    .brand-info p {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin: 2px 0 0;
+      font-weight: 500;
+    }
+
+    .status-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 99px;
+      background: var(--hover);
+      color: var(--text-sub);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.2s ease;
+    }
+
+    .status-badge.active {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+    }
+
+    /* --- List --- */
+    .platform-list {
+      padding: 8px 12px;
+    }
+
+    .platform-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      margin-bottom: 4px;
+      border-radius: var(--radius);
+      transition: background 0.15s ease;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .platform-row:hover {
+      background: var(--hover);
+    }
+
+    .row-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .icon-container {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: var(--hover);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+    }
+
+    /* Use object-fit contain to handle different logo aspect ratios cleanly */
+    .icon-container img {
+      width: 20px;
+      height: 20px;
+      object-fit: contain;
+    }
+
+    .platform-name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* --- Modern Toggle --- */
+    .toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--border);
+      /* Subtle inactive state */
+      transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    input:checked+.slider {
+      background-color: var(--text);
+      /* Black/White high contrast toggle */
+    }
+
+    input:checked+.slider:before {
+      transform: translateX(20px);
+    }
+
+    /* --- Footer --- */
+    .footer {
+      margin-top: 8px;
+      padding: 12px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 16px;
+    }
+
+    .footer-link {
+      font-size: 13px;
+      color: var(--text-sub);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+
+    .footer-link:hover {
+      color: var(--text);
+    }
+
+    .footer-link svg {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <div class="brand">
+      <img src="../assets/icons/icon128.png" alt="ChatFocus" class="brand-icon">
+      <div class="brand-info">
+        <h1>ChatFocus</h1>
+        <p>Control Center</p>
+      </div>
+    </div>
+    <div id="status-badge" class="status-badge">Idle</div>
+  </div>
+
+  <div class="platform-list">
+
+    <label class="platform-row">
+      <div class="row-info">
+        <div class="icon-container">
+          <img src="../assets/logos/chatgpt.png" alt="ChatGPT">
+        </div>
+        <span class="platform-name">ChatGPT</span>
+      </div>
+      <div class="toggle">
+        <input type="checkbox" id="enabled-chatgpt" data-platform="chatgpt">
+        <span class="slider"></span>
+      </div>
+    </label>
+
+    <label class="platform-row">
+      <div class="row-info">
+        <div class="icon-container">
+          <img src="../assets/logos/claude.png" alt="Claude">
+        </div>
+        <span class="platform-name">Claude</span>
+      </div>
+      <div class="toggle">
+        <input type="checkbox" id="enabled-claude" data-platform="claude">
+        <span class="slider"></span>
+      </div>
+    </label>
+
+    <label class="platform-row">
+      <div class="row-info">
+        <div class="icon-container">
+          <img src="../assets/logos/gemini.png" alt="Gemini">
+        </div>
+        <span class="platform-name">Gemini</span>
+      </div>
+      <div class="toggle">
+        <input type="checkbox" id="enabled-gemini" data-platform="gemini">
+        <span class="slider"></span>
+      </div>
+    </label>
+
+  </div>
+
+  <div class="footer">
+    <div class="footer-link" id="openSettings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <path
+          d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z">
+        </path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+      Settings
+    </div>
+    <a href="https://github.com/yourusername/chatfocus/issues" target="_blank" class="footer-link">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      Help
+    </a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>
