@@ -7,33 +7,34 @@ export const Hero: React.FC = () => {
   const [isTocOpen, setIsTocOpen] = useState(true);
 
   return (
-    <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden bg-slate-50">
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+    <section className="relative pt-32 pb-24 lg:pt-48 lg:pb-40 overflow-hidden bg-white">
+      {/* Background decoration */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full max-w-7xl z-0 pointer-events-none">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute top-20 right-20 w-72 h-72 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-32 left-1/2 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+        <div className="grid lg:grid-cols-2 gap-16 lg:gap-8 items-center">
 
           {/* Text Content */}
-          <div className="max-w-2xl">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-primary-50 border border-primary-100 text-primary-700 text-xs font-semibold mb-6">
-              <span className="flex h-2 w-2 rounded-full bg-primary-500"></span>
-              <span>Supported on ChatGPT, Claude & Gemini</span>
-            </div>
-
-            <h1 className="text-4xl lg:text-6xl font-extrabold tracking-tight text-slate-900 mb-6 leading-tight">
+          <div className="max-w-2xl text-center lg:text-left mx-auto lg:mx-0">
+            <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-slate-900 mb-8 leading-[1.1]">
               The Ultimate <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-indigo-600">Productivity Layer</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-indigo-600">Productivity Layer</span>
               <br /> for AI Chats
             </h1>
 
-            <p className="text-lg text-slate-600 mb-8 leading-relaxed">
-              Stop scrolling endlessly. ChatFocus is the #1 browser extension to manage your AI chat history.
-              <strong> Fold long responses</strong>, navigate with an <strong>auto-generated Table of Contents</strong>,
-              and <strong>search across all your conversations</strong> instantly.
+            <p className="text-xl text-slate-600 mb-10 leading-relaxed">
+              Stop scrolling endlessly. Transform ChatGPT, Claude, and Gemini into a structured workspace with
+              <span className="font-semibold text-slate-900"> message folding</span>,
+              <span className="font-semibold text-slate-900"> auto-TOC</span>, and
+              <span className="font-semibold text-slate-900"> global search</span>.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 mb-10">
-              <Button size="lg" icon={<ChromeIcon className="w-5 h-5" />} onClick={() => { }}>
+            <div className="flex flex-col sm:flex-row gap-4 mb-12 justify-center lg:justify-start">
+              <Button size="lg" icon={<ChromeIcon className="w-5 h-5" />} onClick={() => { }} className="shadow-lg shadow-primary-500/20">
                 Add to Chrome - It's Free
               </Button>
               <Button variant="outline" size="lg" onClick={() => { document.getElementById('demo')?.scrollIntoView({ behavior: 'smooth' }) }}>
@@ -41,150 +42,165 @@ export const Hero: React.FC = () => {
               </Button>
             </div>
 
-            <div className="flex items-center space-x-6 text-sm text-slate-500">
+            <div className="flex flex-wrap justify-center lg:justify-start gap-x-8 gap-y-3 text-sm font-medium text-slate-500">
               <div className="flex items-center">
                 <CheckIcon className="w-4 h-4 text-green-500 mr-2" />
-                <span>No signup required</span>
+                No signup required
               </div>
               <div className="flex items-center">
                 <CheckIcon className="w-4 h-4 text-green-500 mr-2" />
-                <span>100% Local Privacy</span>
+                100% Local Privacy
               </div>
               <div className="flex items-center">
-                <CheckIcon className="w-4 h-4 text-green-500 mr-2" />
-                <span>5-Star Chrome Web Store</span>
+                <div className="flex -space-x-1 mr-2">
+                  {[1, 2, 3, 4, 5].map(i => (
+                    <div key={i} className="w-4 h-4 rounded-full bg-yellow-400 border border-white"></div>
+                  ))}
+                </div>
+                5-Star Rated
               </div>
             </div>
           </div>
 
           {/* Interactive Demo UI */}
-          <div id="demo" className="relative isolate z-10 group perspective-1000">
-            {/* Floating Badge */}
-            {/* Floating Badge */}
-            <div className="absolute -top-14 right-5 z-50 bg-white/90 backdrop-blur px-3 py-2 shadow-lg rounded-xl border border-slate-200/60 animate-bounce">
-              <div className="flex items-center space-x-2">
-                <span className="text-xs font-bold text-slate-900">Try clicking these!</span>
-                <span className="text-xl">👇</span>
-              </div>
+          <div id="demo" className="relative z-10 perspective-1000 group">
 
+            {/* Floating Badge */}
+            <div className="absolute -top-12 -right-4 lg:-right-12 z-50 animate-bounce hidden sm:block">
+              <div className="bg-white/80 backdrop-blur border border-slate-200 shadow-xl rounded-2xl px-4 py-2 flex items-center gap-2 transform rotate-3">
+                <span className="text-sm font-bold text-slate-800">Try clicking these!</span>
+                <span className="text-2xl">👇</span>
+              </div>
             </div>
 
-            <div className="relative bg-white rounded-xl border border-slate-200 shadow-2xl overflow-hidden transform transition-transform duration-500 hover:scale-[1.01] hover:shadow-3xl">
+            <div className="relative bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden transform transition-all duration-500 hover:scale-[1.01] hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)]">
 
-              {/* Mock Browser/Extension Header */}
-              <div className="h-12 bg-slate-50 border-b border-slate-200 flex items-center justify-between px-4">
-                <div className="flex space-x-2">
-                  <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                  <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                  <div className="w-3 h-3 rounded-full bg-green-400"></div>
+              {/* Browser Header */}
+              <div className="h-11 bg-slate-50 border-b border-slate-200 flex items-center justify-between px-4 select-none">
+                <div className="flex space-x-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
                 </div>
-                <div className="flex items-center bg-white border border-slate-200 rounded-md px-3 py-1 shadow-sm space-x-3">
-                  <div className="text-xs text-slate-500 font-medium">chatgpt.com</div>
+                <div className="bg-white border border-slate-200 rounded px-3 py-0.5 text-[10px] font-medium text-slate-400 flex items-center gap-2 shadow-sm">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div> chatgpt.com
                 </div>
                 {/* Extension Toolbar Injection */}
-                <div className="flex items-center space-x-2 border-l border-slate-200 pl-3">
+                <div className="flex items-center space-x-1 border-l border-slate-200 pl-3">
                   <button
                     onClick={() => setIsFolded(!isFolded)}
-                    className={`p-1.5 rounded-md transition-colors ${isFolded ? 'bg-primary-100 text-primary-600' : 'hover:bg-slate-100 text-slate-500'}`}
+                    className={`p-1.5 rounded-md transition-all duration-200 ${isFolded ? 'bg-primary-100 text-primary-600 ring-2 ring-primary-500/20' : 'hover:bg-slate-100 text-slate-500'}`}
                     title="Fold History"
                   >
-                    <FoldIcon className="w-4 h-4" />
+                    <FoldIcon className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => setIsTocOpen(!isTocOpen)}
-                    className={`p-1.5 rounded-md transition-colors ${isTocOpen ? 'bg-primary-100 text-primary-600' : 'hover:bg-slate-100 text-slate-500'}`}
+                    className={`p-1.5 rounded-md transition-all duration-200 ${isTocOpen ? 'bg-primary-100 text-primary-600 ring-2 ring-primary-500/20' : 'hover:bg-slate-100 text-slate-500'}`}
                     title="Table of Contents"
                   >
-                    <ListIcon className="w-4 h-4" />
+                    <ListIcon className="w-3.5 h-3.5" />
                   </button>
-                  <button className="p-1.5 rounded-md hover:bg-slate-100 text-slate-500">
-                    <SearchIcon className="w-4 h-4" />
+                  <button className="p-1.5 rounded-md hover:bg-slate-100 text-slate-500 transition-colors">
+                    <SearchIcon className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
 
               {/* Main Chat Area */}
-              <div className="flex h-[400px] bg-white">
+              <div className="flex h-[420px] bg-white relative">
 
                 {/* Chat Content */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-white no-scrollbar">
+                <div className="flex-1 overflow-y-auto p-6 space-y-8 bg-white no-scrollbar scroll-smooth">
+
                   {/* Message 1 */}
-                  <div className="flex space-x-4">
-                    <div className="w-8 h-8 rounded-full bg-slate-200 flex-shrink-0"></div>
-                    <div className="flex-1 space-y-1">
-                      <div className="font-semibold text-sm text-slate-900">User</div>
-                      <div className="text-slate-700 text-sm">How do I create a React hook for fetching data?</div>
+                  <div className="flex gap-4">
+                    <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex-shrink-0"></div>
+                    <div className="space-y-1.5 max-w-[85%]">
+                      <div className="font-semibold text-xs text-slate-900">User</div>
+                      <div className="text-slate-700 text-sm leading-relaxed">How do I create a React hook for fetching data?</div>
                     </div>
                   </div>
 
                   {/* Message 2 (AI) - Foldable */}
-                  <div className={`relative transition-all duration-300 border border-slate-100 rounded-lg p-4 ${isFolded ? 'h-16 overflow-hidden bg-slate-50' : 'bg-white'}`}>
-                    <div className="flex space-x-4">
-                      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xs font-bold flex-shrink-0">AI</div>
-                      <div className="flex-1 space-y-2">
-                        <div className="font-semibold text-sm text-slate-900 flex justify-between">
-                          <span>ChatGPT</span>
-                          {isFolded && <span className="text-xs text-slate-400 font-normal italic">Folded for clarity</span>}
-                        </div>
-                        <div className="text-slate-600 text-sm leading-relaxed">
-                          <p className="mb-2">Here is a simple custom hook called <code>useFetch</code> that you can use to fetch data in React.</p>
-                          <div className="bg-slate-900 rounded-md p-3 my-2 overflow-hidden">
-                            <code className="text-xs text-green-400 font-mono">
-                              const useFetch = (url) =&gt; &#123;<br />
-                              &nbsp;&nbsp;const [data, setData] = useState(null);<br />
-                              &nbsp;&nbsp;/* ... lengthy code ... */<br />
-                              &#125;
-                            </code>
+                  <div className={`group/msg relative transition-all duration-500 ease-in-out border rounded-xl overflow-hidden ${isFolded ? 'border-primary-100 bg-primary-50/30' : 'border-transparent bg-transparent'}`}>
+
+                    {/* Fold Toggle (Hover) */}
+                    {!isFolded && (
+                      <button
+                        onClick={() => setIsFolded(true)}
+                        className="absolute top-2 right-2 opacity-0 group-hover/msg:opacity-100 transition-opacity bg-white border border-slate-200 shadow-sm text-xs font-medium text-slate-500 px-2 py-1 rounded hover:text-primary-600 hover:border-primary-200"
+                      >
+                        Fold
+                      </button>
+                    )}
+
+                    <div className={`p-2 transition-all duration-500 ${isFolded ? 'h-14 overflow-hidden' : ''}`}>
+                      <div className="flex gap-4">
+                        <div className="w-8 h-8 rounded-full bg-green-100 border border-green-200 flex items-center justify-center text-green-700 text-[10px] font-bold flex-shrink-0 shadow-sm">AI</div>
+                        <div className="space-y-2 max-w-[90%]">
+                          <div className="font-semibold text-xs text-slate-900 flex items-center gap-2">
+                            ChatGPT
+                            {isFolded && <span className="text-[10px] text-primary-600 bg-primary-100 px-1.5 py-0.5 rounded font-medium">Folded</span>}
                           </div>
-                          <p>This hook handles loading states and errors automatically. You can import it into any component.</p>
-                          <p className="mt-2">Would you like to see how to use it in a component?</p>
+
+                          <div className="text-slate-600 text-sm leading-relaxed space-y-3">
+                            <p>Here is a simple custom hook called <code className="bg-slate-100 px-1 py-0.5 rounded text-slate-800 font-mono text-xs">useFetch</code>.</p>
+
+                            <div className="bg-[#1e1e1e] rounded-lg p-4 font-mono text-xs text-blue-300 shadow-inner border border-slate-800">
+                              <div className="flex gap-1.5 mb-3 opacity-50">
+                                <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500"></div>
+                                <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
+                              </div>
+                              <span className="text-purple-400">const</span> <span className="text-yellow-200">useFetch</span> = (url) <span className="text-purple-400">=&gt;</span> &#123;<br />
+                              &nbsp;&nbsp;<span className="text-purple-400">const</span> [data, setData] = <span className="text-blue-200">useState</span>(null);<br />
+                              &nbsp;&nbsp;<span className="text-gray-500">// ... logic ...</span><br />
+                              &nbsp;&nbsp;<span className="text-purple-400">return</span> &#123; data &#125;;<br />
+                              &#125;
+                            </div>
+
+                            <p>This hook handles loading states and errors automatically.</p>
+                          </div>
                         </div>
                       </div>
                     </div>
-                    {/* Fold Overlay */}
+
+                    {/* Expand overlay */}
                     {isFolded && (
                       <div
-                        className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50 flex items-end justify-center pb-2 cursor-pointer hover:bg-slate-50/50"
+                        className="absolute inset-0 cursor-pointer bg-gradient-to-b from-transparent to-primary-50/50 hover:bg-primary-50/80 transition-colors flex items-center justify-center"
                         onClick={() => setIsFolded(false)}
                       >
-                        <span className="text-xs font-medium text-primary-600 bg-white px-3 py-1 rounded-full shadow-sm border border-slate-100">Click to expand</span>
+                        <span className="bg-white text-primary-600 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-primary-100 transform translate-y-2 group-hover/msg:translate-y-0 transition-transform">Click to expand</span>
                       </div>
                     )}
                   </div>
 
                   {/* Message 3 */}
-                  <div className="flex space-x-4">
-                    <div className="w-8 h-8 rounded-full bg-slate-200 flex-shrink-0"></div>
-                    <div className="flex-1 space-y-1">
-                      <div className="font-semibold text-sm text-slate-900">User</div>
-                      <div className="text-slate-700 text-sm">Yes, please show an example component.</div>
+                  <div className="flex gap-4">
+                    <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex-shrink-0"></div>
+                    <div className="space-y-1.5 max-w-[85%]">
+                      <div className="font-semibold text-xs text-slate-900">User</div>
+                      <div className="text-slate-700 text-sm leading-relaxed">Show me an example component.</div>
                     </div>
                   </div>
 
-                  {/* Message 4 (AI) */}
-                  <div className="flex space-x-4">
-                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xs font-bold flex-shrink-0">AI</div>
-                    <div className="flex-1 space-y-2">
-                      <div className="font-semibold text-sm text-slate-900">ChatGPT</div>
-                      <div className="text-slate-600 text-sm leading-relaxed">
-                        <p>Certainly! Here's how you use the hook:</p>
-                        <div className="bg-slate-100 h-20 rounded-md mt-2 w-full animate-pulse"></div>
-                      </div>
-                    </div>
-                  </div>
+                  {/* Spacer for scroll */}
+                  <div className="h-12"></div>
 
                 </div>
 
                 {/* Table of Contents Sidebar (Dynamic) */}
-                <div className={`transition-all duration-300 ease-in-out border-l border-slate-200 bg-slate-50 flex flex-col ${isTocOpen ? 'w-48 opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
-                  <div className="p-3 border-b border-slate-200 font-semibold text-xs text-slate-500 uppercase tracking-wider">
-                    Contents
+                <div className={`absolute top-0 right-0 bottom-0 bg-white border-l border-slate-200 shadow-xl transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] flex flex-col z-20 ${isTocOpen ? 'w-48 translate-x-0' : 'w-48 translate-x-full opacity-0'}`}>
+                  <div className="p-4 border-b border-slate-100 bg-slate-50/50 backdrop-blur">
+                    <div className="font-bold text-[10px] text-slate-400 uppercase tracking-widest">Contents</div>
                   </div>
-                  <div className="p-2 space-y-1">
-                    <div className="px-2 py-1.5 text-xs text-slate-700 bg-white rounded border border-slate-200 shadow-sm cursor-pointer">1. Introduction</div>
-                    <div className="px-2 py-1.5 text-xs text-slate-500 hover:bg-slate-200/50 rounded cursor-pointer">2. The useFetch Hook</div>
-                    <div className="px-2 py-1.5 text-xs text-slate-500 hover:bg-slate-200/50 rounded cursor-pointer">3. Example Component</div>
-                    <div className="px-2 py-1.5 text-xs text-slate-500 hover:bg-slate-200/50 rounded cursor-pointer">4. Error Handling</div>
+                  <div className="p-2 space-y-1 overflow-y-auto flex-1">
+                    <div className="px-2 py-2 text-xs font-medium text-primary-700 bg-primary-50 rounded border border-primary-100 cursor-pointer transition-colors">1. Introduction</div>
+                    <div className="px-2 py-2 text-xs font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900 rounded cursor-pointer transition-colors">2. The useFetch Hook</div>
+                    <div className="px-2 py-2 text-xs font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900 rounded cursor-pointer transition-colors">3. Example Component</div>
+                    <div className="px-2 py-2 text-xs font-medium text-slate-500 hover:bg-slate-50 hover:text-slate-900 rounded cursor-pointer transition-colors">4. Error Handling</div>
                   </div>
                 </div>
 
