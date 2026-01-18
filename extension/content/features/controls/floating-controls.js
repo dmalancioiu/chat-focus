@@ -4,7 +4,7 @@ import { saveControlsPosition } from '../../storage/settings.js';
 import { toggleExpandCollapseAll, checkExpandCollapseState } from './actions.js';
 import { toggleCodeMode } from '../code-mode/code-mode.js';
 import { toggleTOC } from '../table-of-contents/toc.js';
-import { toggleExtension } from '../../content/main.js'; // You will export this from main
+import { toggleExtension } from '../../main.js'; // You will export this from main
 
 export function createFloatingControls() {
     if (document.getElementById('chat-focus-controls')) return;
