@@ -2,7 +2,7 @@ import { CONFIG } from '../../core/config.js';
 import { messageStates, isCodeMode } from '../../core/state.js';
 import { settings, saveMessageState } from '../../storage/settings.js';
 import { escapeHtml, safeQuerySelectorAll } from '../../core/utils.js';
-import { determineMessageType, determineFirstMessageType, extractPreviewText, extractFullText, getMessageId } from './processing.js';
+import { determineMessageType, determineFirstMessageType, extractPreviewText, getMessageId } from './processing.js';
 import { updateTableOfContents } from '../table-of-contents/toc.js';
 import { checkExpandCollapseState } from '../controls/actions.js';
 import { updateCodeModeClasses } from '../code-mode/code-mode.js';
@@ -45,12 +45,12 @@ export function processMessage(msgRow, msgId, turnIndex, shouldCollapse = true, 
             id: msgId,
             type: msgType,
             previewText: previewText,
-            fullText: extractFullText(msgRow),
+            //fullText: extractFullText(msgRow),
             element: msgRow,
             turnIndex: turnIndex
         };
 
-        updateTableOfContents();
+        //updateTableOfContents();
 
         // Bind Events
         const handlers = createEventHandlers(msgRow, label, msgId);
@@ -149,6 +149,8 @@ export function foldOldMessages() {
 
         processMessage(msgRow, msgId, turnIndex, shouldCollapse, msgType);
     });
+
+    updateTableOfContents();
 
     checkExpandCollapseState();
     if (isCodeMode.value) updateCodeModeClasses();

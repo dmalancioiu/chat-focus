@@ -159,25 +159,38 @@ export function filterTOCItems() {
     const content = document.getElementById('chat-focus-toc-content');
     if (!content) return;
 
-    let matchCount = 0;
-    const query = tocSearchQuery.value;
+    let count = 0;
+    const query = tocSearchQuery.value; // Already lowercased in event listener
 
     content.querySelectorAll('.chat-focus-toc-item').forEach(item => {
+        // 1. Get the message ID
         const msgId = item.getAttribute('data-msg-id');
-        const msgElement = document.querySelector(`.chat-focus-processed`); // Simplified for brevity
-        // Note: Real implementation needs to find specific message by ID
-        // For accurate DOM mapping we should look up the element from _chatFocusData on the list
 
-        // ... (Logic from original filterTOCItems)
+        // 2. Find the actual DOM element (Source of Truth)
+        // We look it up live instead of storing a huge string copy
+        const msgElement = document.querySelector(`[data-message-id="${msgId}"], [id="${msgId}"]`)
+            || document.querySelector(`.chat-focus-processed[data-turn-index="${item.querySelector('.chat-focus-toc-item-index').textContent.replace('Turn ', '')}"]`);
 
-        // Mocking the match logic for brevity, copy exact logic from monolithic file
-        const text = item.textContent.toLowerCase();
-        const matches = text.includes(query);
-        item.classList.toggle('hidden', !matches);
-        if (matches) matchCount++;
+        let match = false;
+
+        // 3. Search the LIVE DOM text
+        if (msgElement) {
+            // Check full text content of the message
+            if (msgElement.textContent.toLowerCase().includes(query)) {
+                match = true;
+            }
+        } else {
+            // Fallback to preview text if element is somehow missing
+            if (item.textContent.toLowerCase().includes(query)) {
+                match = true;
+            }
+        }
+
+        item.classList.toggle('hidden', !match);
+        if (match) count++;
     });
 
-    updateSearchResultCount(matchCount);
+    updateSearchResultCount(count);
 }
 
 export function updateTOCTitle() {

@@ -16,13 +16,13 @@ export function extractPreviewText(msgRow) {
     return previewText.substring(0, 85) + (previewText.length > 85 ? "..." : "");
 }
 
-export function extractFullText(msgRow) {
-    for (const selector of CONFIG.SELECTORS.textContent) {
-        const textDiv = safeQuerySelector([selector], msgRow);
-        if (textDiv && textDiv.textContent.trim()) return textDiv.textContent.trim();
-    }
-    return "";
-}
+// export function extractFullText(msgRow) {
+//     for (const selector of CONFIG.SELECTORS.textContent) {
+//         const textDiv = safeQuerySelector([selector], msgRow);
+//         if (textDiv && textDiv.textContent.trim()) return textDiv.textContent.trim();
+//     }
+//     return "";
+// }
 
 export function determineMessageType(msgRow) {
     // 1. Try Author Role attributes
