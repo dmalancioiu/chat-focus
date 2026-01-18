@@ -238,6 +238,9 @@ function processMessage(msgRow, msgId, turnIndex, shouldCollapse = true, msgType
 
         msgRow.classList.add('chat-focus-processed');
 
+        // Store turn index as data attribute
+        msgRow.setAttribute('data-turn-index', turnIndex);
+
         // Check saved state first, then use shouldCollapse parameter
         const wasExpanded = messageStates.get(msgId);
         if (wasExpanded === true) {
@@ -309,6 +312,11 @@ function processMessage(msgRow, msgId, turnIndex, shouldCollapse = true, msgType
             label.style.display = 'none';
             saveMessageState(msgId, true);
             checkExpandCollapseState();
+
+            // Update code mode classes if in code mode
+            if (isCodeMode) {
+                updateCodeModeClasses();
+            }
         };
 
         const collapseMessage = (e) => {
@@ -317,6 +325,11 @@ function processMessage(msgRow, msgId, turnIndex, shouldCollapse = true, msgType
             label.style.display = 'flex';
             saveMessageState(msgId, false);
             checkExpandCollapseState();
+
+            // Update code mode classes if in code mode
+            if (isCodeMode) {
+                updateCodeModeClasses();
+            }
         };
 
         label.addEventListener('click', expandMessage);
@@ -389,9 +402,116 @@ function foldOldMessages() {
 
         // Update toggle button state after processing
         checkExpandCollapseState();
+
+        // Update code mode classes if code mode is active
+        if (isCodeMode) {
+            updateCodeModeClasses();
+        }
     } catch (error) {
         console.error('ChatFocus: Error in foldOldMessages', error);
     }
+}
+
+// ==================== SEARCH HIGHLIGHTING ====================
+function highlightSearchTerm(element, searchTerm) {
+    if (!searchTerm || searchTerm.trim() === '') return;
+
+    // Remove any existing highlights first
+    clearSearchHighlights(element);
+
+    // Find all text nodes and highlight matching terms
+    const textContent = CONFIG.SELECTORS.textContent;
+    for (const selector of textContent) {
+        const contentElements = element.querySelectorAll(selector);
+
+        contentElements.forEach(contentEl => {
+            highlightInElement(contentEl, searchTerm);
+        });
+    }
+
+    // Scroll to first highlight (centered for better visibility of the highlighted term)
+    const firstHighlight = element.querySelector('.chat-focus-highlight');
+    if (firstHighlight) {
+        firstHighlight.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+function highlightInElement(element, searchTerm) {
+    const searchLower = searchTerm.toLowerCase();
+
+    // Walk through text nodes
+    const walker = document.createTreeWalker(
+        element,
+        NodeFilter.SHOW_TEXT,
+        null,
+        false
+    );
+
+    const nodesToReplace = [];
+    let node;
+
+    while (node = walker.nextNode()) {
+        const text = node.textContent;
+        const textLower = text.toLowerCase();
+
+        if (textLower.includes(searchLower)) {
+            nodesToReplace.push(node);
+        }
+    }
+
+    // Replace text nodes with highlighted versions
+    nodesToReplace.forEach(node => {
+        const text = node.textContent;
+        const textLower = text.toLowerCase();
+        const searchLower = searchTerm.toLowerCase();
+
+        const fragment = document.createDocumentFragment();
+        let lastIndex = 0;
+        let index = textLower.indexOf(searchLower);
+
+        while (index !== -1) {
+            // Add text before match
+            if (index > lastIndex) {
+                fragment.appendChild(
+                    document.createTextNode(text.substring(lastIndex, index))
+                );
+            }
+
+            // Add highlighted match
+            const mark = document.createElement('mark');
+            mark.className = 'chat-focus-highlight';
+            mark.textContent = text.substring(index, index + searchTerm.length);
+            fragment.appendChild(mark);
+
+            lastIndex = index + searchTerm.length;
+            index = textLower.indexOf(searchLower, lastIndex);
+        }
+
+        // Add remaining text
+        if (lastIndex < text.length) {
+            fragment.appendChild(
+                document.createTextNode(text.substring(lastIndex))
+            );
+        }
+
+        node.parentNode.replaceChild(fragment, node);
+    });
+}
+
+function clearSearchHighlights(element) {
+    const highlights = element.querySelectorAll('.chat-focus-highlight');
+    highlights.forEach(highlight => {
+        const text = document.createTextNode(highlight.textContent);
+        highlight.parentNode.replaceChild(text, highlight);
+    });
+
+    // Normalize to merge adjacent text nodes
+    element.normalize();
+}
+
+function clearAllSearchHighlights() {
+    const allMessages = document.querySelectorAll('.chat-focus-processed');
+    allMessages.forEach(msg => clearSearchHighlights(msg));
 }
 
 // ==================== TABLE OF CONTENTS ====================
@@ -410,14 +530,16 @@ function createTableOfContents() {
                 <button class="chat-focus-toc-close" aria-label="Close">&times;</button>
             </div>
             <div class="chat-focus-toc-search">
-                <span class="chat-focus-toc-search-icon">${ICONS.search}</span>
-                <input
-                    type="text"
-                    class="chat-focus-toc-search-input"
-                    placeholder="Search messages..."
-                    aria-label="Search messages"
-                />
-                <button class="chat-focus-toc-search-clear" aria-label="Clear search">&times;</button>
+                <div class="chat-focus-toc-search-wrapper">
+                    <span class="chat-focus-toc-search-icon">${ICONS.search}</span>
+                    <input
+                        type="text"
+                        class="chat-focus-toc-search-input"
+                        placeholder="Search messages..."
+                        aria-label="Search messages"
+                    />
+                    <button class="chat-focus-toc-search-clear" aria-label="Clear search">&times;</button>
+                </div>
             </div>
         </div>
         <div class="chat-focus-toc-content" id="chat-focus-toc-content"></div>
@@ -441,9 +563,14 @@ function createTableOfContents() {
     const searchClear = toc.querySelector('.chat-focus-toc-search-clear');
 
     searchInput.addEventListener('input', (e) => {
-        tocSearchQuery = e.target.value.toLowerCase();
+        tocSearchQuery = e.target.value.toLowerCase().trim();
         searchClear.classList.toggle('visible', tocSearchQuery.length > 0);
         filterTOCItems();
+
+        // Clear highlights when search changes
+        if (tocSearchQuery === '') {
+            clearAllSearchHighlights();
+        }
     });
 
     searchClear.addEventListener('click', () => {
@@ -451,6 +578,8 @@ function createTableOfContents() {
         tocSearchQuery = '';
         searchClear.classList.remove('visible');
         filterTOCItems();
+        clearAllSearchHighlights();
+        searchInput.focus();
     });
 }
 
@@ -462,8 +591,41 @@ function toggleTOC() {
     if (toc) toc.classList.toggle('hidden', !tocVisible);
     if (toggle) toggle.classList.toggle('hidden', tocVisible);
 
-    if (tocVisible) updateTableOfContents();
+    if (tocVisible) {
+        updateTableOfContents();
+        updateTOCTitle();
+        updateActiveTOCItem();
+    } else {
+        // Clear highlights when TOC is closed
+        clearAllSearchHighlights();
+    }
+
     saveTocState();
+}
+
+function updateSearchResultCount(count) {
+    const searchContainer = document.querySelector('.chat-focus-toc-search');
+    if (!searchContainer) return;
+
+    // Remove existing count badge
+    const existingBadge = searchContainer.querySelector('.chat-focus-search-count');
+    if (existingBadge) existingBadge.remove();
+
+    // Add count badge if there's a search query
+    if (tocSearchQuery && tocSearchQuery.trim() !== '') {
+        const badge = document.createElement('div');
+        badge.className = 'chat-focus-search-count';
+
+        if (count === 0) {
+            badge.textContent = 'No matches found';
+            badge.style.color = 'var(--cf-color-text-tertiary)';
+        } else {
+            badge.textContent = `${count} ${count === 1 ? 'result' : 'results'}`;
+            badge.style.color = 'var(--cf-color-accent)';
+        }
+
+        searchContainer.appendChild(badge);
+    }
 }
 
 function filterTOCItems() {
@@ -471,11 +633,47 @@ function filterTOCItems() {
     if (!content) return;
 
     const items = content.querySelectorAll('.chat-focus-toc-item');
+    let matchCount = 0;
+
     items.forEach(item => {
-        const text = item.querySelector('.chat-focus-toc-item-text').textContent.toLowerCase();
-        const matches = text.includes(tocSearchQuery);
+        const msgId = item.getAttribute('data-msg-id');
+
+        // Find the corresponding message element
+        const messages = Array.from(document.querySelectorAll('.chat-focus-processed'));
+        const msgElement = messages.find(msg => msg._chatFocusData && msg._chatFocusData.id === msgId);
+
+        let matches = false;
+        let matchInPreview = false;
+
+        if (msgElement && msgElement._chatFocusData) {
+            // Search in the full text content
+            const fullText = msgElement._chatFocusData.fullText || '';
+            const previewText = msgElement._chatFocusData.previewText || '';
+
+            matches = fullText.toLowerCase().includes(tocSearchQuery);
+            matchInPreview = previewText.toLowerCase().includes(tocSearchQuery);
+
+            // Add indicator if match is in full content but not in preview
+            if (matches && !matchInPreview && tocSearchQuery !== '') {
+                item.classList.add('deep-match');
+                item.setAttribute('data-match-hint', 'Match in message');
+            } else {
+                item.classList.remove('deep-match');
+                item.removeAttribute('data-match-hint');
+            }
+        } else {
+            // Fallback to preview text if full text not available
+            const text = item.querySelector('.chat-focus-toc-item-text').textContent.toLowerCase();
+            matches = text.includes(tocSearchQuery);
+            item.classList.remove('deep-match');
+        }
+
         item.classList.toggle('hidden', !matches);
+        if (matches) matchCount++;
     });
+
+    // Update search result count
+    updateSearchResultCount(matchCount);
 }
 
 function updateTableOfContents() {
@@ -483,24 +681,42 @@ function updateTableOfContents() {
     if (!content) return;
 
     const messages = Array.from(document.querySelectorAll('.chat-focus-processed'));
-    const tocItems = messages
+    let tocItems = messages
         .map(msg => msg._chatFocusData)
         .filter(data => data && data.element);
 
+    // Filter items based on code mode
+    if (isCodeMode) {
+        tocItems = tocItems.filter(data => {
+            const element = data.element;
+            // Show only messages that are visible in code mode
+            const isHidden = element.classList.contains('chat-focus-no-code') ||
+                           element.classList.contains('chat-focus-user-before-no-code');
+            return !isHidden;
+        });
+    }
+
     if (tocItems.length === 0) {
-        content.innerHTML = '<div class="chat-focus-toc-empty">No messages yet</div>';
+        const emptyMessage = isCodeMode
+            ? '<div class="chat-focus-toc-empty">No code blocks found</div>'
+            : '<div class="chat-focus-toc-empty">No messages yet</div>';
+        content.innerHTML = emptyMessage;
         return;
     }
 
     content.innerHTML = tocItems.map((data, index) => {
         const displayText = data.previewText || 'Message';
         const typeClass = data.type === 'user' ? 'user' : 'ai';
+        const typeLabel = isCodeMode ? (data.type === 'user' ? 'Question' : 'Code') : '';
         return `
-            <div class="chat-focus-toc-item" data-msg-id="${data.id}" tabindex="0" role="button">
+            <div class="chat-focus-toc-item ${isCodeMode ? 'code-mode-item' : ''}" data-msg-id="${data.id}" tabindex="0" role="button">
                 <div class="chat-focus-toc-item-type ${typeClass}"></div>
                 <div class="chat-focus-toc-item-content">
                     <div class="chat-focus-toc-item-text">${escapeHtml(displayText)}</div>
-                    <div class="chat-focus-toc-item-index">Turn ${data.turnIndex}</div>
+                    <div class="chat-focus-toc-item-meta">
+                        ${typeLabel ? `<span class="chat-focus-toc-item-label">${typeLabel}</span>` : ''}
+                        <span class="chat-focus-toc-item-index">Turn ${data.turnIndex}</span>
+                    </div>
                 </div>
             </div>
         `;
@@ -513,15 +729,28 @@ function updateTableOfContents() {
 
         const handleClick = () => {
             if (msgData && msgData.element) {
-                msgData.element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // Clear previous highlights
+                clearAllSearchHighlights();
 
+                // Expand message if collapsed
                 if (msgData.element.classList.contains('chat-focus-collapsed')) {
-                    const label = msgData.element.querySelector('.chat-focus-label');
-                    if (label && msgData.element._chatFocusHandlers) {
+                    if (msgData.element._chatFocusHandlers) {
                         msgData.element._chatFocusHandlers.expandMessage();
                     }
                 }
 
+                // Scroll to the top of the message
+                msgData.element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                // Highlight search term if there's an active search
+                if (tocSearchQuery && tocSearchQuery.trim() !== '') {
+                    // Wait a bit for expand animation and scroll to complete
+                    setTimeout(() => {
+                        highlightSearchTerm(msgData.element, tocSearchQuery);
+                    }, 300);
+                }
+
+                // Update active state
                 content.querySelectorAll('.chat-focus-toc-item').forEach(i => i.classList.remove('active'));
                 item.classList.add('active');
             }
@@ -542,21 +771,45 @@ function updateTableOfContents() {
 
 function updateActiveTOCItem() {
     const content = document.getElementById('chat-focus-toc-content');
-    if (!content || !tocVisible) return;
+    if (!content) return;
 
     const messages = Array.from(document.querySelectorAll('.chat-focus-processed'));
-    const viewportTop = window.scrollY + 100;
+    if (messages.length === 0) return;
 
+    // Find the message that's most visible in the viewport
+    const viewportMiddle = window.innerHeight / 2;
     let activeIndex = -1;
+    let closestDistance = Infinity;
+
     messages.forEach((msg, index) => {
         const rect = msg.getBoundingClientRect();
-        if (rect.top <= 100 && rect.bottom >= 100) {
-            activeIndex = index;
+
+        // Check if message is in viewport
+        if (rect.bottom > 0 && rect.top < window.innerHeight) {
+            // Calculate distance from viewport center
+            const msgCenter = rect.top + rect.height / 2;
+            const distance = Math.abs(msgCenter - viewportMiddle);
+
+            if (distance < closestDistance) {
+                closestDistance = distance;
+                activeIndex = index;
+            }
         }
     });
 
+    // Update active state on TOC items
     content.querySelectorAll('.chat-focus-toc-item').forEach((item, index) => {
-        item.classList.toggle('active', index === activeIndex);
+        const wasActive = item.classList.contains('active');
+        const isActive = index === activeIndex;
+        item.classList.toggle('active', isActive);
+
+        // Scroll TOC item into view if it becomes active (and wasn't before)
+        if (isActive && !wasActive && tocVisible) {
+            // Use a small delay to ensure smooth scrolling
+            requestAnimationFrame(() => {
+                item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+            });
+        }
     });
 }
 
@@ -741,6 +994,113 @@ function collapseAllMessages() {
 
 let isCodeMode = false;
 
+function hasCodeBlocks(msgElement) {
+    // Check if message contains code blocks (various selectors for different platforms)
+    const codeBlockSelectors = [
+        'pre',
+        'pre code',
+        'code[class*="language-"]',
+        '.code-block',
+        '[class*="codeblock"]',
+        'div[class*="code"] pre',
+        '.markdown pre'
+    ];
+
+    for (const selector of codeBlockSelectors) {
+        try {
+            const blocks = msgElement.querySelectorAll(selector);
+            if (blocks.length > 0) {
+                // Additional check: make sure it's not inline code
+                for (const block of blocks) {
+                    const parent = block.parentElement;
+                    // If it's a pre tag or has multiple lines, it's a code block
+                    if (block.tagName === 'PRE' ||
+                        (block.textContent && block.textContent.includes('\n')) ||
+                        (parent && parent.tagName === 'PRE')) {
+                        return true;
+                    }
+                }
+            }
+        } catch (e) {
+            // Skip invalid selectors
+        }
+    }
+
+    return false;
+}
+
+function updateCodeModeClasses() {
+    const messages = Array.from(document.querySelectorAll('.chat-focus-processed'));
+
+    messages.forEach((msg, index) => {
+        const msgData = msg._chatFocusData;
+        if (!msgData) return;
+
+        const hasCode = hasCodeBlocks(msg);
+
+        // Mark messages without code
+        msg.classList.toggle('chat-focus-no-code', !hasCode);
+
+        // If this is a user message, check if next AI message has code
+        if (msgData.type === 'user') {
+            let nextAiHasCode = false;
+
+            // Find next AI message
+            for (let i = index + 1; i < messages.length; i++) {
+                const nextMsg = messages[i];
+                const nextData = nextMsg._chatFocusData;
+
+                if (nextData && nextData.type === 'ai') {
+                    nextAiHasCode = hasCodeBlocks(nextMsg);
+                    break;
+                }
+            }
+
+            // Mark user message if next AI has no code
+            msg.classList.toggle('chat-focus-user-before-no-code', !nextAiHasCode);
+        }
+
+        // Add turn indicator for visible messages in code mode
+        const shouldShowIndicator = msgData.type === 'user'
+            ? !msg.classList.contains('chat-focus-user-before-no-code')
+            : hasCode;
+
+        if (shouldShowIndicator) {
+            let indicator = msg.querySelector('.chat-focus-turn-indicator');
+            if (!indicator) {
+                indicator = document.createElement('div');
+                indicator.className = 'chat-focus-turn-indicator';
+                indicator.textContent = `Turn ${msgData.turnIndex}`;
+                msg.insertBefore(indicator, msg.firstChild);
+            }
+        } else {
+            // Remove indicator if exists
+            const indicator = msg.querySelector('.chat-focus-turn-indicator');
+            if (indicator) indicator.remove();
+        }
+    });
+
+    // Update TOC to reflect code mode visibility
+    if (isCodeMode) {
+        updateTableOfContents();
+    }
+}
+
+function updateTOCTitle() {
+    const tocTitle = document.querySelector('.chat-focus-toc-title');
+    if (!tocTitle) return;
+
+    if (isCodeMode) {
+        const visibleCount = document.querySelectorAll('.chat-focus-toc-item').length;
+        const totalCount = document.querySelectorAll('.chat-focus-processed').length;
+        const badge = `<span class="chat-focus-toc-mode-badge">Code Only</span>`;
+        const count = visibleCount > 0 ? `<span class="chat-focus-toc-count">${visibleCount}/${totalCount}</span>` : '';
+        tocTitle.innerHTML = `Contents ${badge}${count}`;
+    } else {
+        tocTitle.textContent = 'Contents';
+    }
+}
+
 function toggleCodeMode() {
     isCodeMode = !isCodeMode;
     document.body.classList.toggle('chat-focus-code-mode', isCodeMode);
@@ -750,8 +1110,22 @@ function toggleCodeMode() {
 
     if (isCodeMode) {
         expandAllMessages();
+        updateCodeModeClasses();
+        updateTableOfContents();
+        updateTOCTitle();
+        updateActiveTOCItem();
         showNotification("Code-Only Mode: Active");
     } else {
+        // Remove code mode classes and indicators when disabling
+        const messages = document.querySelectorAll('.chat-focus-processed');
+        messages.forEach(msg => {
+            msg.classList.remove('chat-focus-no-code', 'chat-focus-user-before-no-code');
+            const indicator = msg.querySelector('.chat-focus-turn-indicator');
+            if (indicator) indicator.remove();
+        });
+        updateTableOfContents();
+        updateTOCTitle();
+        updateActiveTOCItem();
         showNotification("Code-Only Mode: Disabled");
     }
 }
@@ -883,11 +1257,24 @@ async function init() {
         createTableOfContents();
         createFloatingControls();
 
-        // Update active TOC item on scroll
+        // Update active TOC item on scroll (live tracking)
         let scrollTimeout;
+        let ticking = false;
+
         window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    updateActiveTOCItem();
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }, { passive: true });
+
+        // Also update on resize
+        window.addEventListener('resize', () => {
             clearTimeout(scrollTimeout);
-            scrollTimeout = setTimeout(updateActiveTOCItem, 100);
+            scrollTimeout = setTimeout(updateActiveTOCItem, 150);
         }, { passive: true });
 
         // Listen for settings changes
