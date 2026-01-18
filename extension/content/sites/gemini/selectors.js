@@ -1,28 +1,37 @@
 /**
  * Gemini - Site-Specific Selectors
- * Defines DOM selectors for Google Gemini platform
- *
- * TODO: Update with actual Gemini selectors when implementing
+ * Defines DOM selectors for Google Gemini
  */
 
 export const SELECTORS = {
-    // Message containers (placeholder)
+    // Message containers
     articles: [
-        // TODO: Add Gemini-specific selectors
+        'message-content',            // Gemini custom element
+        '.message-content',           // Class fallback
+        '[data-test-id="message-content"]',
+        '.user-query-container',      // User specific
+        '.model-response-container'   // Model specific
     ],
 
-    // Author role detection (placeholder)
+    // Author role detection
     authorRole: [
-        // TODO: Add Gemini-specific selectors
+        '[data-is-model]',            // Attribute often used by Gemini
+        '.user-query-container',
+        '.model-response-container'
     ],
 
-    // Text content (placeholder)
+    // Text content
     textContent: [
-        // TODO: Add Gemini-specific selectors
+        '.message-content',
+        '.model-response-text',
+        '.user-query-text',
+        'p'
     ],
 
-    // Code blocks (placeholder)
+    // Code blocks
     codeBlocks: [
-        // TODO: Add Gemini-specific selectors
+        'code-block',                 // Gemini often uses custom elements
+        'pre',
+        '.code-block-decoration'
     ]
 };

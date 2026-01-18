@@ -1,8 +1,6 @@
 /**
  * Claude Site Adapter
  * Provides Claude-specific implementations
- *
- * TODO: Implement when adding Claude support
  */
 
 import { SELECTORS } from './selectors.js';
@@ -15,29 +13,50 @@ export const ClaudeAdapter = {
 
     init() {
         console.log('ChatFocus: Initialized for Claude');
-        // TODO: Claude-specific initialization
+        document.body.classList.add('chat-focus-site-claude');
     },
 
     getMessages() {
-        // TODO: Implement Claude message detection
-        return [];
+        // Collect all potential message elements
+        let messages = [];
+        for (const selector of SELECTORS.articles) {
+            const elements = document.querySelectorAll(selector);
+            if (elements.length > 0) {
+                // If we found specific classes, prefer those
+                messages = Array.from(elements);
+                break;
+            }
+        }
+        return messages;
     },
 
     detectMessageType(element) {
-        // TODO: Implement Claude message type detection
+        // Claude uses specific classes for User vs AI
+        const classList = element.className.toLowerCase();
+
+        if (classList.includes('user-message') || element.querySelector('.font-user-message')) {
+            return 'user';
+        }
+        if (classList.includes('claude-message') || element.querySelector('.font-claude-message')) {
+            return 'ai';
+        }
+
+        // Fallback: Data attributes
+        if (element.getAttribute('data-testid') === 'user-message') return 'user';
+        if (element.getAttribute('data-testid') === 'claude-message') return 'ai';
+
         return 'unknown';
     },
 
     hasCodeBlocks(element) {
-        // TODO: Implement Claude code block detection
-        return false;
+        return element.querySelector('pre') !== null;
     },
 
     onNewMessage(element) {
-        // TODO: Claude-specific handling
+        // Optional: Claude specific post-processing
     },
 
     cleanup() {
-        // TODO: Cleanup
+        document.body.classList.remove('chat-focus-site-claude');
     }
 };

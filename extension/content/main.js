@@ -6,9 +6,23 @@ import { createFloatingControls } from './features/controls/floating-controls.js
 import { expandAllMessages, collapseAllMessages, toggleExpandCollapseAll } from './features/controls/actions.js';
 import { showNotification } from './core/utils.js';
 
+// Import Adapters
+import { ChatGPTAdapter } from './sites/chatgpt/adapter.js';
+import { ClaudeAdapter } from './sites/claude/adapter.js';
+import { GeminiAdapter } from './sites/gemini/adapter.js';
+
 let isEnabled = true;
 let observer = null;
 let foldTimer = null;
+let activeAdapter = null;
+
+// Site Detection Logic
+function detectSite() {
+    const host = window.location.hostname;
+    if (host.includes('claude.ai')) return ClaudeAdapter;
+    if (host.includes('gemini.google.com')) return GeminiAdapter;
+    return ChatGPTAdapter;
+}
 
 export async function toggleExtension() {
     isEnabled = !isEnabled;
@@ -31,11 +45,11 @@ function initObserver() {
         let shouldProcess = false;
 
         for (const mutation of mutations) {
-            // 1. Ignore text changes (AI typing) - Huge performance win
+            // Performance: Ignore text changes (AI typing)
             if (mutation.type !== 'childList') continue;
 
-            // 2. Ignore our own UI elements
             const target = mutation.target;
+            // Ignore our own UI elements
             if (target.classList && (
                 target.classList.contains('chat-focus-toc') ||
                 target.classList.contains('chat-focus-controls') ||
@@ -44,7 +58,7 @@ function initObserver() {
                 continue;
             }
 
-            // 3. Only run if actual nodes were added
+            // Only run if nodes were added
             if (mutation.addedNodes.length > 0) {
                 shouldProcess = true;
                 break;
@@ -76,24 +90,28 @@ function setupKeyboardShortcuts() {
     });
 }
 
-function setupScrollTracking() {
-    let ticking = false;
-    window.addEventListener('scroll', () => {
-        if (!ticking) {
-            window.requestAnimationFrame(() => {
-                updateActiveTOCItem();
-                ticking = false;
-            });
-            ticking = true;
-        }
-    }, { passive: true });
-}
-
 async function init() {
+    // 1. Detect and Initialize Adapter
+    activeAdapter = detectSite();
+    if (!activeAdapter) {
+        console.warn('ChatFocus: Unknown site, extension disabled.');
+        return;
+    }
+
+    // 2. Inject Adapter Selectors into Global CONFIG
+    // This allows existing modules (folding.js) to work without changes
+    CONFIG.SELECTORS = activeAdapter.selectors;
+    activeAdapter.init();
+
+    // 3. Load Settings
     await loadSettings();
     isEnabled = settings.enabled;
-    if (!isEnabled) return;
+    if (!isEnabled) {
+        console.log("ChatFocus: Disabled in settings");
+        return;
+    }
 
+    // 4. Start Features
     setTimeout(() => {
         initObserver();
         foldOldMessages();
@@ -102,9 +120,8 @@ async function init() {
     setupKeyboardShortcuts();
     createTableOfContents();
     createFloatingControls();
-    setupScrollTracking();
 
-    console.log('ChatFocus: Modular architecture loaded');
+    console.log(`ChatFocus: Loaded for ${activeAdapter.displayName}`);
 }
 
 init();

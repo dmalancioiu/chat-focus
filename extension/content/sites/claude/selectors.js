@@ -1,28 +1,37 @@
 /**
  * Claude - Site-Specific Selectors
- * Defines DOM selectors for Claude platform
- *
- * TODO: Update with actual Claude selectors when implementing
+ * Defines DOM selectors for Claude.ai
  */
 
 export const SELECTORS = {
-    // Message containers (placeholder)
+    // Message containers
     articles: [
-        // TODO: Add Claude-specific selectors
+        '.font-user-message',
+        '.font-claude-message',
+        '[data-testid="user-message"]',
+        '[data-testid="claude-message"]',
+        '.grid-cols-1 > div' // Fallback for message rows
     ],
 
-    // Author role detection (placeholder)
+    // Author role detection (used to classify User vs AI)
     authorRole: [
-        // TODO: Add Claude-specific selectors
+        '.font-user-message',    // User class
+        '.font-claude-message',  // AI class
+        '[data-testid="user-message"]',
+        '[data-testid="claude-message"]'
     ],
 
-    // Text content (placeholder)
+    // Text content
     textContent: [
-        // TODO: Add Claude-specific selectors
+        '.whitespace-pre-wrap',
+        '.font-user-message',
+        '.font-claude-message'
     ],
 
-    // Code blocks (placeholder)
+    // Code blocks
     codeBlocks: [
-        // TODO: Add Claude-specific selectors
+        'pre',
+        '.code-block',
+        'code'
     ]
 };
