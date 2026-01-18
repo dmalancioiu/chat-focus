@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ChatFocus Settings</title>
-  <link rel="stylesheet" href="ui-common.css">
+  <link rel="stylesheet" href="../styles/ui-common.css">
   <style>
     body {
       padding: 0;
@@ -243,6 +244,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="options-container">
     <!-- Header -->
@@ -250,9 +252,9 @@
       <div class="options-title-row">
         <div class="options-icon">
           <svg viewBox="0 0 24 24">
-            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-            <path d="M2 17l10 5 10-5"/>
-            <path d="M2 12l10 5 10-5"/>
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
           </svg>
         </div>
         <h1 class="options-title">ChatFocus Settings</h1>
@@ -379,7 +381,8 @@
         <div class="info-box">
           <div class="info-box-title">Pro Tip</div>
           <div class="info-box-text">
-            Click the floating controls at the bottom-right of ChatGPT to quickly expand/collapse all messages, toggle code-only mode, or open the table of contents. You can drag the controls to reposition them.
+            Click the floating controls at the bottom-right of ChatGPT to quickly expand/collapse all messages, toggle
+            code-only mode, or open the table of contents. You can drag the controls to reposition them.
           </div>
         </div>
       </div>
@@ -399,11 +402,12 @@
     <div class="options-status" id="statusMessage"></div>
   </div>
 
-  <script>
+  <!-- <script>
     // Detect platform for keyboard shortcuts display
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
     document.body.classList.add(isMac ? 'platform-mac' : 'platform-win');
-  </script>
+  </script> -->
   <script src="options.js"></script>
 </body>
+
 </html>

@@ -6,25 +6,38 @@
 import { CONFIG } from '../core/config.js';
 import { state } from '../core/state.js';
 
+// Export the settings object directly so main.js can use it
+export let settings = {
+    enabled: CONFIG.DEFAULT_ENABLED,
+    keepOpen: CONFIG.DEFAULT_KEEP_OPEN,
+    previewLength: CONFIG.DEFAULT_PREVIEW_LENGTH
+};
+
 export async function loadSettings() {
     try {
         const syncData = await chrome.storage.sync.get(['enabled', 'keepOpen', 'previewLength']);
-        state.settings.enabled = syncData.enabled !== undefined ? syncData.enabled : CONFIG.DEFAULT_ENABLED;
-        state.settings.keepOpen = syncData.keepOpen || CONFIG.DEFAULT_KEEP_OPEN;
-        state.settings.previewLength = syncData.previewLength || CONFIG.DEFAULT_PREVIEW_LENGTH;
+
+        // Update the exported settings object
+        settings.enabled = syncData.enabled !== undefined ? syncData.enabled : CONFIG.DEFAULT_ENABLED;
+        settings.keepOpen = syncData.keepOpen || CONFIG.DEFAULT_KEEP_OPEN;
+        settings.previewLength = syncData.previewLength || CONFIG.DEFAULT_PREVIEW_LENGTH;
+
+        // Also update the shared state for other modules
+        if (state && state.settings) {
+            state.settings = settings;
+            state.isEnabled = settings.enabled;
+        }
 
         const localData = await chrome.storage.local.get(['messageStates', 'tocVisible', 'controlsPosition']);
-        if (localData.messageStates) {
+        if (localData.messageStates && state) {
             state.messageStates = new Map(Object.entries(localData.messageStates));
         }
-        if (localData.tocVisible !== undefined) {
+        if (localData.tocVisible !== undefined && state) {
             state.tocVisible = localData.tocVisible;
         }
-        if (localData.controlsPosition) {
+        if (localData.controlsPosition && state) {
             state.controlsPosition = localData.controlsPosition;
         }
-
-        state.isEnabled = state.settings.enabled;
     } catch (error) {
         console.error('ChatFocus: Error loading settings', error);
     }
@@ -33,16 +46,21 @@ export async function loadSettings() {
 export async function saveSettings() {
     try {
         await chrome.storage.sync.set({
-            enabled: state.settings.enabled,
-            keepOpen: state.settings.keepOpen,
-            previewLength: state.settings.previewLength
+            enabled: settings.enabled,
+            keepOpen: settings.keepOpen,
+            previewLength: settings.previewLength
         });
+
+        // Update state if needed
+        if (state) state.isEnabled = settings.enabled;
     } catch (error) {
         console.error('ChatFocus: Error saving settings', error);
     }
 }
 
 export function saveMessageState(msgId, isExpanded) {
+    if (!state) return;
+
     state.messageStates.set(msgId, isExpanded);
     clearTimeout(state.saveStateTimeout);
     state.saveStateTimeout = setTimeout(async () => {
@@ -57,6 +75,7 @@ export function saveMessageState(msgId, isExpanded) {
 }
 
 export async function saveTocState() {
+    if (!state) return;
     try {
         await chrome.storage.local.set({ tocVisible: state.tocVisible });
     } catch (error) {

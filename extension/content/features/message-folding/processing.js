@@ -1,83 +1,60 @@
-/**
- * ChatFocus - Message Processing
- * Handles message detection, preview extraction, and type determination
- */
-
 import { CONFIG } from '../../core/config.js';
-import { safeQuerySelector } from '../../core/utils.js';
+import { safeQuerySelector, safeQuerySelectorAll } from '../../core/utils.js';
 
-export function extractPreviewText(msgRow, settings) {
+export function extractPreviewText(msgRow) {
     let previewText = "Collapsed Message";
     for (const selector of CONFIG.SELECTORS.textContent) {
         const textDiv = safeQuerySelector([selector], msgRow);
         if (textDiv) {
             const text = textDiv.innerText || textDiv.textContent || '';
             if (text.trim()) {
-                previewText = text
-                    .replace(/[\n\r]+/g, " ")
-                    .replace(/\s+/g, " ")
-                    .trim()
-                    .substring(0, settings.previewLength);
-                if (text.length > settings.previewLength) {
-                    previewText += "...";
-                }
+                previewText = text.replace(/[\n\r]+/g, " ").replace(/\s+/g, " ").trim();
                 break;
             }
         }
     }
-    return previewText;
+    return previewText.substring(0, 85) + (previewText.length > 85 ? "..." : "");
 }
 
 export function extractFullText(msgRow) {
     for (const selector of CONFIG.SELECTORS.textContent) {
         const textDiv = safeQuerySelector([selector], msgRow);
-        if (textDiv) {
-            const text = textDiv.innerText || textDiv.textContent || '';
-            if (text.trim()) return text.trim();
-        }
+        if (textDiv && textDiv.textContent.trim()) return textDiv.textContent.trim();
     }
     return "";
 }
 
 export function determineMessageType(msgRow) {
-    // Try to detect from DOM attributes
+    // 1. Try Author Role attributes
     for (const selector of CONFIG.SELECTORS.authorRole) {
         const authorNode = safeQuerySelector([selector], msgRow);
         if (authorNode) {
-            const role = authorNode.getAttribute('data-message-author-role') ||
-                authorNode.getAttribute('data-author-role') ||
-                authorNode.getAttribute('role') || '';
-
-            if (role.toLowerCase().includes('user')) {
-                return 'user';
-            }
-            if (role.toLowerCase().includes('assistant') || role.toLowerCase().includes('ai')) {
-                return 'ai';
-            }
+            const role = (authorNode.getAttribute('data-message-author-role') ||
+                authorNode.getAttribute('role') || '').toLowerCase();
+            if (role.includes('user')) return 'user';
+            if (role.includes('assistant') || role.includes('ai')) return 'ai';
         }
     }
-
-    // Check classes
+    // 2. Fallback to classes
     const classes = msgRow.className.toLowerCase();
     if (classes.includes('user')) return 'user';
     if (classes.includes('assistant')) return 'ai';
 
-    // Check for avatar or icon indicators
-    const avatar = msgRow.querySelector('img[alt*="user" i], [data-testid*="user" i]');
-    if (avatar) return 'user';
-
-    const aiAvatar = msgRow.querySelector('img[alt*="assistant" i], [data-testid*="assistant" i], [data-testid*="ai" i]');
-    if (aiAvatar) return 'ai';
+    // 3. Fallback to icons
+    if (msgRow.querySelector('img[alt*="user" i]')) return 'user';
+    if (msgRow.querySelector('img[alt*="assistant" i]')) return 'ai';
 
     return 'unknown';
 }
 
 export function determineFirstMessageType(articles) {
     if (articles.length === 0) return 'user';
-
     const firstType = determineMessageType(articles[0]);
-    if (firstType !== 'unknown') return firstType;
+    return firstType !== 'unknown' ? firstType : 'user';
+}
 
-    // Default assumption: first message is from user
-    return 'user';
+export function getMessageId(msgRow) {
+    return msgRow.getAttribute('data-message-id') ||
+        msgRow.getAttribute('id') ||
+        `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }

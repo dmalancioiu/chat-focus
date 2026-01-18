@@ -42,3 +42,16 @@ export function getMessageId(msgRow) {
     const content = msgRow.textContent?.substring(0, 50) || '';
     return `msg_${content.length}_${Date.now()}`;
 }
+
+export function showNotification(message) {
+    const notification = document.createElement('div');
+    notification.className = 'chat-focus-notification';
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => notification.classList.add('show'), 10);
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => notification.remove(), 200);
+    }, 2000);
+}

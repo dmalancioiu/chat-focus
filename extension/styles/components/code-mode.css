@@ -1,0 +1,91 @@
+/* ==================== CODE-ONLY MODE ==================== */
+/* Hide non-code in AI */
+body.chat-focus-code-mode .chat-focus-ai-collapsed .markdown>*:not(pre):not(div[class*="code"]):not([class*="codeblock"]),
+body.chat-focus-code-mode .chat-focus-ai-collapsed [class*="markdown"]>*:not(pre):not(div[class*="code"]):not([class*="codeblock"]) {
+    display: none !important;
+}
+
+/* User msg full */
+body.chat-focus-code-mode .chat-focus-user-collapsed .markdown>*,
+body.chat-focus-code-mode .chat-focus-user-collapsed [class*="markdown"]>* {
+    display: block !important;
+}
+
+/* Spacing */
+body.chat-focus-code-mode .chat-focus-ai-collapsed pre,
+body.chat-focus-code-mode .chat-focus-ai-collapsed div[class*="code"],
+body.chat-focus-code-mode .chat-focus-ai-collapsed [class*="codeblock"] {
+    margin-top: var(--cf-space-2xl) !important;
+    margin-bottom: var(--cf-space-2xl) !important;
+}
+
+body.chat-focus-code-mode .chat-focus-ai-collapsed .markdown pre:first-child,
+body.chat-focus-code-mode .chat-focus-ai-collapsed [class*="markdown"] pre:first-child {
+    margin-top: 0 !important;
+}
+
+/* User styling */
+body.chat-focus-code-mode .chat-focus-user-collapsed:not(.chat-focus-user-before-no-code) {
+    padding: var(--cf-space-lg) var(--cf-space-xl) !important;
+    margin-bottom: var(--cf-space-lg) !important;
+    background: linear-gradient(135deg, rgba(142, 142, 160, 0.04) 0%, transparent 100%);
+    border-left: 3px solid rgba(142, 142, 160, 0.3);
+    border-radius: var(--cf-radius-md);
+    position: relative;
+}
+
+@media (prefers-color-scheme: dark) {
+    body.chat-focus-code-mode .chat-focus-user-collapsed:not(.chat-focus-user-before-no-code) {
+        background: linear-gradient(135deg, rgba(142, 142, 160, 0.08) 0%, transparent 100%);
+        border-left-color: rgba(142, 142, 160, 0.35);
+    }
+}
+
+/* AI Code Styling */
+body.chat-focus-code-mode .chat-focus-ai-collapsed:not(.chat-focus-no-code) {
+    padding-bottom: var(--cf-space-3xl) !important;
+    margin-bottom: var(--cf-space-3xl) !important;
+    border-bottom: 2px solid var(--cf-color-border-light);
+    position: relative;
+}
+
+/* Turn Indicators */
+.chat-focus-turn-indicator {
+    display: none;
+}
+
+body.chat-focus-code-mode .chat-focus-turn-indicator {
+    display: inline-block;
+    margin-bottom: var(--cf-space-md);
+    font-size: var(--cf-text-xs);
+    font-weight: 600;
+    color: var(--cf-color-text-secondary);
+    background: rgba(255, 255, 255, 0.8);
+    padding: 6px var(--cf-space-md);
+    border-radius: var(--cf-radius-full);
+    border: 1.5px solid var(--cf-color-border-base);
+    font-family: var(--cf-font-system);
+}
+
+@media (prefers-color-scheme: dark) {
+    body.chat-focus-code-mode .chat-focus-turn-indicator {
+        background: rgba(52, 53, 65, 0.9);
+        border-color: rgba(255, 255, 255, 0.12);
+        color: var(--cf-color-text-secondary);
+    }
+}
+
+/* Hide non-code messages */
+body.chat-focus-code-mode .chat-focus-processed.chat-focus-ai-collapsed.chat-focus-no-code {
+    display: none !important;
+}
+
+body.chat-focus-code-mode .chat-focus-processed.chat-focus-user-collapsed.chat-focus-user-before-no-code {
+    display: none !important;
+}
+
+/* Hide regular labels */
+body.chat-focus-code-mode .chat-focus-label,
+body.chat-focus-code-mode .chat-focus-refold-btn {
+    display: none !important;
+}

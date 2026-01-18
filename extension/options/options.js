@@ -1,5 +1,8 @@
 // Options page script for ChatFocus
 
+const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+document.body.classList.add(isMac ? 'platform-mac' : 'platform-win');
+
 document.addEventListener('DOMContentLoaded', async () => {
     const enabledCheckbox = document.getElementById('enabled');
     const keepOpenSlider = document.getElementById('keepOpen');
@@ -55,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const tabs = await chrome.tabs.query({
                 url: ['https://chatgpt.com/*', 'https://claude.ai/*']
             });
-            
+
             tabs.forEach(tab => {
                 chrome.tabs.sendMessage(tab.id, { action: 'settingsUpdated', settings });
             });
